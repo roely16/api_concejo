@@ -3,31 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use DB;
 
-use App\Punto_Agenda;
-use App\Acta;
+use App\Persona;
 
-class puntoAgendaController extends Controller
+class menuController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($id)
+    public function index()
     {
-
-        $puntos = Acta::find(64)->puntos_agenda;
-        $acta = Acta::find(64);
-
-        $data = [
-            "acta" => $acta,
-            "puntos" => $puntos
-        ];
-
-        return response()->json($data);
-
+        //
     }
 
     /**
@@ -48,26 +36,7 @@ class puntoAgendaController extends Controller
      */
     public function store(Request $request)
     {
-
-        try {
-            
-            $punto_agenda = new Punto_Agenda();
-            $punto_agenda->descripcion = $request->descripcion;
-            $punto_agenda->id_acta = $request->id_acta;
-            $punto_agenda->orden  = $request->orden;
-
-            $punto_agenda->save();
-
-        } catch (\Exception $e) {
-           
-            return response()->json($e->getMessage());
-
-        }
-
-        // $this->index($puntos_agenda->id_acta);
-
-        return response()->json($request);
-
+        //
     }
 
     /**
@@ -114,4 +83,13 @@ class puntoAgendaController extends Controller
     {
         //
     }
+
+    public function menuPrincipal($id_persona){
+
+        $menu = Persona::find($id_persona)->menus()->get();
+
+        return response()->json($menu);
+
+    }
+
 }

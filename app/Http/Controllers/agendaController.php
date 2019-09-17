@@ -30,7 +30,7 @@ class AgendaController extends Controller
         $data["items"] = $agenda;
         $data["fields"] = [
             [
-                "label" => "No",
+                "label" => "Acto No.",
                 "key" => "no_agenda",
                 "sortable" => true
             ],
