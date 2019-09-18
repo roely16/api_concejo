@@ -32,7 +32,7 @@
 	
     <div class="no_acta">
         <div>
-            Acto No. 46-2019
+            Acto No. {{ $acta->numero_acta }} - {{ $acta->year }}
         </div>
         <div>
             -1-
@@ -40,7 +40,7 @@
     </div>
         
     <div class="titulo">
-        <strong>ACTA NÚMERO CUARENTE Y SEIS</strong>
+        <strong>ACTA NÚMERO {{ $no_acta_letras }}</strong>
     </div>
     
     <div class="titulo">
@@ -49,6 +49,8 @@
     </div>
 
     <br><br>
+
+    <!-- {{ $acta }} -->
 
     <div class="titulo_agenda">
         <strong>AGENDA</strong>

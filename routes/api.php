@@ -37,4 +37,10 @@ Route::get('/detalle_acta/{id}', 'actaController@detalleActa');
 Route::post('/editar_acta', 'actaController@editarActa');
 
 // Mail
-Route::get('/enviar_correos', 'mailController@sendMail');
+Route::get('/pdf_acta/{id_acta}', 'mailController@pdfActa');
+Route::get('/enviar_correos', 'mailController@enviarCorreo');
+
+// Puntos del acta
+Route::post('/editar_punto', 'puntoAgendaController@editar');
+Route::delete('/eliminar_punto/{id}', 'puntoAgendaController@destroy');
+Route::post('/reordenar', 'puntoAgendaController@reordenar');

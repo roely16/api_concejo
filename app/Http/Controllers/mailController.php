@@ -6,13 +6,27 @@ use Illuminate\Http\Request;
 use PDF;
 use App\Acta;
 
+use DB;
+
+use App\Mail\Test;
+use Illuminate\Support\Facades\Mail;
+
+
 class mailController extends Controller
 {
     
-    public function sendMail(){
+    public function __construct()
+    {
+        DB::setDateFormat('DD/MM/YYYY');
+    }
 
-        $puntos = Acta::find(64)->puntos_agenda;
-        $acta = Acta::find(64);
+    public function pdfActa($id){
+
+        $puntos = Acta::find($id)->puntos_agenda;
+        $acta = Acta::find($id);
+
+        $number_formatter = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);
+        $no_acta_letras = strtoupper($number_formatter->format($acta->numero_acta));
 
         $data = [
             "acta" => $acta,
@@ -22,8 +36,10 @@ class mailController extends Controller
         $data = [
             'title' => 'Welcome to HDTuto.com',
             'acta' => $acta,
-            'puntos_agenda' => $puntos
+            'puntos_agenda' => $puntos,
+            'no_acta_letras' => $no_acta_letras
         ];
+
         $pdf = PDF::loadView('myPDF', $data);
         $pdf->setPaper('legal', 'portrait');
 
@@ -31,6 +47,14 @@ class mailController extends Controller
         // return $pdf->open('itsolutionstuff.pdf');
 
         return $pdf->stream("dompdf_out.pdf", array("Attachment" => false));
+
+    }
+
+    public function enviarCorreo(){
+
+        Mail::to('gerson.roely@gmail.com')->send(new Test());
+
+        // return response()->json($request);
 
     }
 
