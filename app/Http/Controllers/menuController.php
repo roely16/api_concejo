@@ -86,7 +86,7 @@ class menuController extends Controller
 
     public function menuPrincipal($id_persona){
 
-        $menu = Persona::find($id_persona)->menus()->get();
+        $menu = Persona::find($id_persona)->menus()->orderBy('orden')->get();
 
         return response()->json($menu);
 

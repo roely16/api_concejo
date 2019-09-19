@@ -44,3 +44,12 @@ Route::get('/enviar_correos', 'mailController@enviarCorreo');
 Route::post('/editar_punto', 'puntoAgendaController@editar');
 Route::delete('/eliminar_punto/{id}', 'puntoAgendaController@destroy');
 Route::post('/reordenar', 'puntoAgendaController@reordenar');
+
+// Roles
+Route::get('/obtener_roles', 'rolController@obtenerRoles');
+
+// Personas
+Route::get('/obtener_personas', 'personaController@obtenerPersonas');
+Route::get('/detalle_persona/{id}', 'personaController@detallePersona');
+Route::post('/editar_persona', 'personaController@editarPersona');
+Route::get('/permisos_usuario/{id}', 'personaController@permisosUsuario');
