@@ -11,14 +11,16 @@ class Test extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $data;
+
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($data)
     {
-        //
+        $this->data = $data;
     }
 
     /**
@@ -28,6 +30,11 @@ class Test extends Mailable
      */
     public function build()
     {
-        return $this->view('mails.mail');
+        $location = storage_path("app/agendas/" . $this->data->nombre_archivo);
+
+        return $this->from('example@example.com')->view('mails.mail')->attach($location, [
+            'as' => $this->data->etiqueta_archivo,
+            'mime' => 'application/pdf',
+        ]);
     }
 }

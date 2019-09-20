@@ -13,7 +13,7 @@ class personaController extends Controller
 
         $data = [];
 
-        $personas = Persona::get();
+        $personas = Persona::with('rol')->get();
 
         $data["items"] = $personas;
         $data["fields"] = [
@@ -75,6 +75,58 @@ class personaController extends Controller
         $persona = Persona::find($id)->menus()->get();
 
         return response()->json($persona);
+
+    }
+
+    public function registrarPersona(Request $request){
+
+        try {
+           
+            $persona = new Persona();
+            $persona->nombre = $request->nombre;
+            $persona->apellido = $request->apellido;
+            $persona->email = $request->email;
+            $persona->id_rol = $request->rol;
+
+            $persona->save();
+
+        } catch (\Exception $e) {
+           
+            if ($e->getCode() == 1) {
+                
+                $message = "Ya existe una persona con este correo";
+
+            }else{
+
+                $message = "Problema al registrar a la persona";
+
+            }
+
+            $error = [
+                "code" => 100,
+                "message" => $message,
+                "errorCode" => $e->getCode() 
+            ];
+
+            return response()->json($error);
+
+        }
+
+        return response()->json(["code" => 200, "data" => $persona]);
+
+    }
+
+    public function personasCorreo(){
+
+        $personas = Persona::with('rol')->get();
+
+        foreach ($personas as $persona) {
+        
+            $persona->enviar_correo = true;
+
+        }
+
+        return response()->json($personas);
 
     }
 

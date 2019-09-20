@@ -8,23 +8,8 @@
 </head>
 <body>
     
-    <p>Hola! Se ha reportado un nuevo caso de emergencia a las .</p>
-    <p>Estos son los datos del usuario que ha realizado la denuncia:</p>
-    <ul>
-        <li>Nombre: </li>
-        <li>Teléfono: </li>
-        <li>DNI: </li>
-    </ul>
-    <p>Y esta es la posición reportada:</p>
-    <ul>
-        <li>Latitud: </li>
-        <li>Longitud: </li>
-        <li>
-            <a href="">
-                Ver en Google Maps
-            </a>
-        </li>
-    </ul>
+    <h1>Sistema de Control de Actas</h1>
+    <h3>Se la ha compartido la agenda del acta No. para su aprobación</h3>
 
 </body>
 </html>

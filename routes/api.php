@@ -39,6 +39,7 @@ Route::post('/editar_acta', 'actaController@editarActa');
 // Mail
 Route::get('/pdf_acta/{id_acta}', 'mailController@pdfActa');
 Route::get('/enviar_correos', 'mailController@enviarCorreo');
+Route::post('/enviar_agenda_aprobacion', 'mailController@enviarAgendaAprobacion');
 
 // Puntos del acta
 Route::post('/editar_punto', 'puntoAgendaController@editar');
@@ -53,3 +54,8 @@ Route::get('/obtener_personas', 'personaController@obtenerPersonas');
 Route::get('/detalle_persona/{id}', 'personaController@detallePersona');
 Route::post('/editar_persona', 'personaController@editarPersona');
 Route::get('/permisos_usuario/{id}', 'personaController@permisosUsuario');
+Route::post('/registrar_persona', 'personaController@registrarPersona');
+Route::get('/personas_correo', 'personaController@personasCorreo');
+
+// Bitacora
+Route::get('/bitacora_correo', 'bitacoraController@bitacoraCorreo');

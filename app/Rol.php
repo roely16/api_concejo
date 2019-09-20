@@ -10,4 +10,11 @@ class Rol extends Model
     protected $primary_key = 'id';
 
     public $timestamps = false;
+
+    public function personas(){
+
+        return $this->hasMany('App\Persona');
+
+    }
+
 }

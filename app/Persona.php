@@ -11,8 +11,15 @@ class Persona extends Model
 
     public $timestamps = false;
 
-    public function menus()
-    {
+    public function menus(){
+
         return $this->belongsToMany('App\Menu', 'cnj_acceso', 'id_persona', 'id_menu');
+
+    }
+
+    public function rol(){
+
+        return $this->belongsTo('App\Rol', 'id_rol');
+
     }
 }
