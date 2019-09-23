@@ -7,6 +7,9 @@ use DB;
 
 use App\Punto_Agenda;
 use App\Acta;
+use App\Bitacora_Punto;
+
+
 
 class puntoAgendaController extends Controller
 {
@@ -48,6 +51,8 @@ class puntoAgendaController extends Controller
 
             $punto_agenda->save();
 
+            $this->registrarBitacora($punto_agenda->id, 1);
+
         } catch (\Exception $e) {
            
             return response()->json($e->getMessage());
@@ -56,7 +61,7 @@ class puntoAgendaController extends Controller
 
         // $this->index($puntos_agenda->id_acta);
 
-        return response()->json($request);
+        return response()->json($punto_agenda);
 
     }
 
@@ -137,7 +142,11 @@ class puntoAgendaController extends Controller
 
             if ($punto_agenda) {
                 
-                $punto_agenda->delete();
+                $punto_agenda->eliminado = 'S';
+                $punto_agenda->save();
+
+                // Registrar en la bitácora
+                $this->registrarBitacora($punto_agenda->id, 3);
 
             }else{
 
@@ -165,6 +174,18 @@ class puntoAgendaController extends Controller
         
 
         return response()->json([ "code" => 200 ]);
+
+    }
+
+    public function registrarBitacora($id_punto, $id_accion){
+
+        $bitacora_punto = new Bitacora_Punto();
+        $bitacora_punto->id_punto = $id_punto;
+        $bitacora_punto->id_accion = $id_accion;
+        $bitacora_punto->fecha = DB::raw('SYSDATE');
+        $bitacora_punto->usuario = 1;
+
+        $bitacora_punto->save();
 
     }
 }
