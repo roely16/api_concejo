@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use DB;
 
 use App\Punto_Agenda;
-use App\Acta;
+use App\Agenda;
 use App\Bitacora_Punto;
 
 
@@ -18,15 +18,16 @@ class puntoAgendaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($id)
-    {
+    public function index($id){
 
-        $puntos = Acta::find($id)->puntos_agenda;
-        $acta = Acta::find($id);
+        $puntos = Agenda::find($id)->puntos_agenda()->where('eliminado', '=', null)->get();
+        $puntos_eliminados = Agenda::find($id)->puntos_agenda()->where('eliminado', 'S')->get();
+        $acta = Agenda::find($id);
 
         $data = [
             "acta" => $acta,
-            "puntos" => $puntos
+            "puntos" => $puntos,
+            "puntos_eliminados" => $puntos_eliminados
         ];
 
         return response()->json($data);
@@ -39,8 +40,7 @@ class puntoAgendaController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request){
 
         try {
             
@@ -71,6 +71,9 @@ class puntoAgendaController extends Controller
         $punto_agenda->descripcion = $request->descripcion;
         $punto_agenda->save();
 
+        // Registrar en la bitácora
+        $this->registrarBitacora($punto_agenda->id, 2, $request->original, $request->descripcion);
+
         return response()->json($punto_agenda);
 
     }
@@ -99,8 +102,7 @@ class puntoAgendaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
+    public function show($id){
         //
     }
 
@@ -110,8 +112,7 @@ class puntoAgendaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
+    public function edit($id){
         //
     }
 
@@ -122,8 +123,7 @@ class puntoAgendaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id){
         //
     }
 
@@ -133,12 +133,11 @@ class puntoAgendaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
+    public function destroy(Request $request){
         
         try {
             
-            $punto_agenda = Punto_Agenda::find($id);
+            $punto_agenda = Punto_Agenda::find($request->id_punto);
 
             if ($punto_agenda) {
                 
@@ -146,7 +145,7 @@ class puntoAgendaController extends Controller
                 $punto_agenda->save();
 
                 // Registrar en la bitácora
-                $this->registrarBitacora($punto_agenda->id, 3);
+                $this->registrarBitacora($punto_agenda->id, 3, '', '', $request->motivo);
 
             }else{
 
@@ -177,15 +176,55 @@ class puntoAgendaController extends Controller
 
     }
 
-    public function registrarBitacora($id_punto, $id_accion){
+    public function registrarBitacora($id_punto, $id_accion, $original = '', $edited = '', $motivo_eliminacion = ''){
 
         $bitacora_punto = new Bitacora_Punto();
         $bitacora_punto->id_punto = $id_punto;
         $bitacora_punto->id_accion = $id_accion;
+        $bitacora_punto->original = $original;
+        $bitacora_punto->modificado = $edited;
+        $bitacora_punto->motivo_eliminacion = $motivo_eliminacion;
         $bitacora_punto->fecha = DB::raw('SYSDATE');
         $bitacora_punto->usuario = 1;
 
         $bitacora_punto->save();
+
+    }
+
+    public function bitacoraPunto($id){
+
+        $bitacora_punto = Bitacora_Punto::where('id_punto', $id)->with('accion')->with('persona')->orderBy('id')->get();
+
+        foreach ($bitacora_punto as &$item) {
+            
+            $item->_showDetails = false;
+        }
+
+        $fields = [
+            [
+                "key" => "fecha",
+                "label" => "Fecha"
+            ],
+            [
+                "key" => "accion",
+                "label" => "Acción"
+            ],
+            [
+                "key" => "persona",
+                "label" => "Usuario"
+            ],
+            [
+                "key" => "show_details",
+                "label" => "Detalles"
+            ]
+            
+        ];
+
+        $data = [];
+        $data["items"] = $bitacora_punto;
+        $data["fields"] = $fields;
+
+        return response()->json($data);
 
     }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use PDF;
-use App\Acta;
+use App\Agenda;
 
 use DB;
 use Storage;
@@ -23,8 +23,8 @@ class mailController extends Controller
 
     public function pdfActa($id){
 
-        $puntos = Acta::find($id)->puntos_agenda;
-        $acta = Acta::find($id);
+        $puntos = Agenda::find($id)->puntos_agenda;
+        $acta = Agenda::find($id);
 
         $number_formatter = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);
         $no_acta_letras = strtoupper($number_formatter->format($acta->numero_acta));
@@ -66,8 +66,8 @@ class mailController extends Controller
             $id = $request->id_acta;
             $destinos = $request->destinos;
 
-            $puntos = Acta::find($id)->puntos_agenda;
-            $acta = Acta::find($id);
+            $puntos = Agenda::find($id)->puntos_agenda;
+            $acta = Agenda::find($id);
 
             $number_formatter = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);
             $no_acta_letras = strtoupper($number_formatter->format($acta->numero_acta));

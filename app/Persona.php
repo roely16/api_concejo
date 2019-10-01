@@ -22,4 +22,9 @@ class Persona extends Model
         return $this->belongsTo('App\Rol', 'id_rol');
 
     }
+
+    public function puesto(){
+
+        return $this->belongsTo('App\Puesto', 'id_puesto');
+    }
 }

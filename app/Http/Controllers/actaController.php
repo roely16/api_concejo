@@ -1,11 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-
+ 
 use Illuminate\Http\Request;
 
 use App\Tipo_Acta;
+use App\Agenda;
 use App\Acta;
+use App\Punto_Agenda;
 
 use DB;
 
@@ -28,7 +30,7 @@ class actaController extends Controller
         if (!$acta) {
             $no_acta = 1;
         }else{
-            $no_acta = $acta->numero_acta + 1;
+            $no_acta = $acta->no_acta + 1;
         }
 
         $no_acta = [
@@ -36,12 +38,12 @@ class actaController extends Controller
             "year" => $year
         ];
 
-        // Obtener los tipos de acta
-        $tipos_actas = Tipo_Acta::all();
+        // Obtener agendas sin acta
+        $agendas = Agenda::all();
 
         $data = [
             "numero_acta" => $no_acta,
-            "tipos_actas" => $tipos_actas
+            "agendas" => $agendas
         ];
 
         return response()->json($data);
@@ -53,10 +55,10 @@ class actaController extends Controller
         try {
 
             $acta = new Acta();
-            $acta->id_tipo = $request->id_tipo;
-            $acta->numero_acta = $request->no_agenda;
+            $acta->id_agenda = $request->id_agenda;
+            $acta->no_acta = $request->numero;
             $acta->year = $request->year;
-            $acta->fecha = $request->fecha;
+            $acta->descripcion = $request->descripcion;
 
             $result = $acta->save();
 
@@ -84,23 +86,28 @@ class actaController extends Controller
 
         $data = [];
 
-        $actas = Acta::orderBy('id', 'desc')->get();
+        $agendas = Acta::where('eliminada', null)->orderBy('id', 'desc')->get();
 
-        $data["items"] = $actas;
+        $data["items"] = $agendas;
         $data["fields"] = [
             [
-                "label" => "Acta No.",
+                "label" => "No.",
                 "key" => "no_acta",
                 "sortable" => true
             ],
             [
-                "label" => "Fecha",
-                "key" => "fecha",
+                "label" => "Año",
+                "key" => "year",
                 "sortable" => true
             ],
             [
-                "label" => "Tipo",
-                "key" => "id_tipo",
+                "label" => "Agenda",
+                "key" => "agenda",
+                "sortable" => true
+            ],
+            [
+                "label" => "Estado",
+                "key" => "estado",
                 "sortable" => true
             ],
             [
@@ -116,9 +123,17 @@ class actaController extends Controller
 
     public function detalleActa($id){
 
-        $acta = Acta::find($id);
+        $data = [];
 
-        return response()->json($acta);
+        $acta = Acta::find($id);
+        $acta->agenda;
+
+        $agendas = Agenda::all();
+
+        $data["acta"] = $acta;
+        $data["agendas"] = $agendas;
+
+        return response()->json($data);
 
     }
 
@@ -130,10 +145,10 @@ class actaController extends Controller
 
             $acta = Acta::find($id);
 
-            $acta->id_tipo = $request->id_tipo;
-            $acta->numero_acta = $request->numero_acta;
+            $acta->no_acta = $request->no_acta;
             $acta->year = $request->year;
-            $acta->fecha = $request->fecha;
+            $acta->id_agenda = $request->id_agenda;
+            $acta->descripcion = $request->descripcion;
 
             $acta->save();
 
@@ -158,6 +173,32 @@ class actaController extends Controller
         }
 
         return response()->json($request);
+
+    }
+
+    public function puntosAgenda($id){
+
+        $acta = Acta::find($id);
+        $acta->agenda->estado->puntos_agenda;
+        $acta->agenda->puntos_agenda;
+
+        return response()->json($acta);
+
+    }
+
+    public function detallePuntoActa(Request $request){
+
+        $id_acta = $request->id_acta;
+        $id_punto_agenda = $request->id_punto_agenda;
+
+        $data = [];
+
+        // Punto de la agenda
+        $punto_agenda = Punto_Agenda::find($id_punto_agenda);
+
+        $data["punto_agenda"] = $punto_agenda;
+
+        return response()->json($data);
 
     }
 

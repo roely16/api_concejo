@@ -28,6 +28,11 @@ class personaController extends Controller
                 "sortable" => true
             ],
             [
+                "label" => "Puesto",
+                "key" => "puesto",
+                "sortable" => true
+            ],
+            [
                 "label" => "Email",
                 "key" => "email",
                 "sortable" => true
@@ -118,7 +123,7 @@ class personaController extends Controller
 
     public function personasCorreo(){
 
-        $personas = Persona::with('rol')->get();
+        $personas = Persona::where('id_rol', '!=', null)->with('rol')->get();
 
         foreach ($personas as $persona) {
         

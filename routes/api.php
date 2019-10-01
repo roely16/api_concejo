@@ -29,22 +29,33 @@ Route::get('/menu_principal/{id_persona}', 'menuController@menuPrincipal');
 // Login
 Route::post('/login', 'usuarioController@login');
 
-// Acta
+// Agenda
+Route::get('/obtener_agendas', 'agendaController@obtenerAgendas');
+Route::post('/registrar_agenda', 'agendaController@registrarAgenda');
+Route::get('/detalle_agenda/{id}', 'agendaController@detalleAgenda');
+Route::post('/editar_agenda', 'agendaController@editarAgenda');
+Route::post('/eliminar_agenda', 'agendaController@eliminarAgenda');
+
+// Actas
 Route::get('/datos_modal_acta', 'actaController@datosModalCreacion');
 Route::post('/registrar_acta', 'actaController@registrarActa');
 Route::get('/obtener_actas', 'actaController@obtenerActas');
 Route::get('/detalle_acta/{id}', 'actaController@detalleActa');
 Route::post('/editar_acta', 'actaController@editarActa');
+Route::get('/puntos_agenda_acta/{id}', 'actaController@puntosAgenda');
+Route::post('/detalle_punto_acta_agenda', 'actaController@detallePuntoActa');
 
 // Mail
 Route::get('/pdf_acta/{id_acta}', 'mailController@pdfActa');
 Route::get('/enviar_correos', 'mailController@enviarCorreo');
 Route::post('/enviar_agenda_aprobacion', 'mailController@enviarAgendaAprobacion');
 
-// Puntos del acta
+// Puntos de la agenda
 Route::post('/editar_punto', 'puntoAgendaController@editar');
-Route::delete('/eliminar_punto/{id}', 'puntoAgendaController@destroy');
+Route::post('/eliminar_punto', 'puntoAgendaController@destroy');
 Route::post('/reordenar', 'puntoAgendaController@reordenar');
+Route::get('/bitacora_punto/{id}', 'puntoAgendaController@bitacoraPunto');
+Route::get('/pdf_agenda/{id}', 'agendaController@pdfAgenda');
 
 // Roles
 Route::get('/obtener_roles', 'rolController@obtenerRoles');
@@ -59,3 +70,10 @@ Route::get('/personas_correo', 'personaController@personasCorreo');
 
 // Bitacora
 Route::get('/bitacora_correo', 'bitacoraController@bitacoraCorreo');
+
+// Toma de asistencia
+Route::get('/lista_asistencia/{id}', 'asistenciaController@listaAsistencia');
+Route::post('/registrar_asistencia', 'asistenciaController@registrarAsistencia');
+Route::post('/eliminar_asistencia', 'asistenciaController@eliminarAsistencia');
+Route::post('/registrar_asistencia_especial', 'asistenciaController@registrarAsistenciaEspecial');
+Route::post('/congelar_asistencia', 'asistenciaController@congelarAsistencia');

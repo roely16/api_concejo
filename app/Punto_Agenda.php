@@ -13,7 +13,13 @@ class Punto_Agenda extends Model
 
     public function acta()
     {
-        return $this->belongsTo('App\Acta');
+        return $this->belongsTo('App\Agenda');
+    }
+
+    public function bitacora(){
+
+        return $this->hasMany('App\Bitacora_Punto', 'id_punto');
+        
     }
 
 }
