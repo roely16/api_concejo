@@ -77,3 +77,9 @@ Route::post('/registrar_asistencia', 'asistenciaController@registrarAsistencia')
 Route::post('/eliminar_asistencia', 'asistenciaController@eliminarAsistencia');
 Route::post('/registrar_asistencia_especial', 'asistenciaController@registrarAsistenciaEspecial');
 Route::post('/congelar_asistencia', 'asistenciaController@congelarAsistencia');
+
+// Puntos de Acta
+Route::post('/registro_punto_acta', 'actaController@registroPuntoActa');
+Route::post('/editar_punto_acta', 'actaController@editarPuntoActa');
+Route::get('/bitacora_punto_acta/{id}', 'actaController@bitacoraPunto');
+Route::post('/eliminar_punto_acta', 'actaController@eliminarPuntoActa');

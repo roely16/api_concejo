@@ -8,6 +8,8 @@ use App\Tipo_Acta;
 use App\Agenda;
 use App\Acta;
 use App\Punto_Agenda;
+use App\Punto_Acta;
+use App\Bitacora_Punto_Acta;
 
 use DB;
 
@@ -16,7 +18,7 @@ class actaController extends Controller
 
     public function __construct()
     {
-        DB::setDateFormat('DD/MM/YYYY');
+        // DB::setDateFormat('DD/MM/YYYY');
     }
     
     public function datosModalCreacion(){
@@ -39,7 +41,7 @@ class actaController extends Controller
         ];
 
         // Obtener agendas sin acta
-        $agendas = Agenda::all();
+        $agendas = Agenda::all('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'id_estado', 'asistencia_congelada', 'descripcion', 'eliminada');
 
         $data = [
             "numero_acta" => $no_acta,
@@ -86,9 +88,14 @@ class actaController extends Controller
 
         $data = [];
 
-        $agendas = Acta::where('eliminada', null)->orderBy('id', 'desc')->get();
+        $actas = Acta::where('eliminada', null)->orderBy('id', 'desc')->get();
 
-        $data["items"] = $agendas;
+        foreach ($actas as &$acta) {
+            
+            $acta->agenda->tipo_agenda;
+        }
+
+        $data["items"] = $actas;
         $data["fields"] = [
             [
                 "label" => "No.",
@@ -128,7 +135,7 @@ class actaController extends Controller
         $acta = Acta::find($id);
         $acta->agenda;
 
-        $agendas = Agenda::all();
+        $agendas = Agenda::all('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'id_estado', 'asistencia_congelada', 'descripcion', 'eliminada');
 
         $data["acta"] = $acta;
         $data["agendas"] = $agendas;
@@ -179,8 +186,9 @@ class actaController extends Controller
     public function puntosAgenda($id){
 
         $acta = Acta::find($id);
-        $acta->agenda->estado->puntos_agenda;
+        $acta->agenda->estado;
         $acta->agenda->puntos_agenda;
+        $acta->agenda->tipo_agenda;
 
         return response()->json($acta);
 
@@ -195,10 +203,109 @@ class actaController extends Controller
 
         // Punto de la agenda
         $punto_agenda = Punto_Agenda::find($id_punto_agenda);
+        $punto_agenda->agenda->tipo_agenda;
+
+        // Punto de acta
+        $punto_acta = Punto_Acta::where('id_punto_agenda', $id_punto_agenda)->where('eliminado', null)->first();
+
+        // Datos de la agenda
 
         $data["punto_agenda"] = $punto_agenda;
+        $data["punto_acta"] = $punto_acta;
 
         return response()->json($data);
+
+    }
+
+    public function registroPuntoActa(Request $request){
+
+        $punto_acta = new Punto_Acta();
+        $punto_acta->id_acta = $request->id_acta;
+        $punto_acta->id_punto_agenda = $request->id_punto_agenda;
+        $punto_acta->descripcion = $request->descripcion;
+        $punto_acta->save();
+
+        $this->registrarBitacora($punto_acta->id, 1);
+
+        return response()->json($punto_acta);
+
+    }
+
+    public function editarPuntoActa(Request $request){
+
+        $punto_acta = Punto_Acta::find($request->id);
+        $punto_acta->descripcion = $request->descripcion;
+        $punto_acta->save();
+
+        $this->registrarBitacora($punto_acta->id, 2, $request->original, $request->descripcion, '');
+
+        return response()->json($punto_acta);
+
+    }
+
+    public function registrarBitacora($id_punto, $id_accion, $original = '', $edited = '', $motivo_eliminacion = ''){
+
+        $bitacora_punto = new Bitacora_Punto_Acta();
+        $bitacora_punto->id_punto = $id_punto;
+        $bitacora_punto->id_accion = $id_accion;
+        $bitacora_punto->original = $original;
+        $bitacora_punto->modificado = $edited;
+        $bitacora_punto->motivo_eliminacion = $motivo_eliminacion;
+        $bitacora_punto->fecha = DB::raw('SYSDATE');
+        $bitacora_punto->usuario = 1;
+
+        $bitacora_punto->save();
+
+    }
+
+    public function bitacoraPunto($id){
+
+        $bitacora_punto = Bitacora_Punto_Acta::where('id_punto', $id)->with('accion')->with('persona')->orderBy('id')->get();
+
+        foreach ($bitacora_punto as &$item) {
+            
+            $item->_showDetails = false;
+        }
+
+        $fields = [
+            [
+                "key" => "fecha",
+                "label" => "Fecha"
+            ],
+            [
+                "key" => "accion",
+                "label" => "Acción"
+            ],
+            [
+                "key" => "persona",
+                "label" => "Usuario"
+            ],
+            [
+                "key" => "show_details",
+                "label" => "Detalles"
+            ]
+            
+        ];
+
+        $data = [];
+        $data["items"] = $bitacora_punto;
+        $data["fields"] = $fields;
+
+        return response()->json($data);
+
+        // return response()->json($id);
+
+    }
+
+    public function eliminarPuntoActa(Request $request){
+
+        $punto_acta = Punto_Acta::find($request->id_punto_acta);
+        $punto_acta->eliminado = 'S';
+        $punto_acta->save();
+
+        $this->registrarBitacora($punto_acta->id, 3, $request->descripcion, '', $request->motivo_eliminacion);
+
+        return response()->json($punto_acta);
 
     }
 

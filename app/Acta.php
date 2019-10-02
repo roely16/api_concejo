@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use DB;
 
 class Acta extends Model
 {
@@ -13,7 +14,7 @@ class Acta extends Model
 
     public function agenda(){
 
-        return $this->belongsTo('App\Agenda', 'id_agenda');
+        return $this->belongsTo('App\Agenda', 'id_agenda')->select('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'id_estado', 'asistencia_congelada', 'descripcion', 'eliminada');
 
     }
 
