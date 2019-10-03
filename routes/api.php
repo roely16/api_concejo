@@ -83,3 +83,12 @@ Route::post('/registro_punto_acta', 'actaController@registroPuntoActa');
 Route::post('/editar_punto_acta', 'actaController@editarPuntoActa');
 Route::get('/bitacora_punto_acta/{id}', 'actaController@bitacoraPunto');
 Route::post('/eliminar_punto_acta', 'actaController@eliminarPuntoActa');
+
+// Documentos
+Route::post('/registrar_documento', 'documentoController@registrarDocumento');
+Route::get('/obtener_documentos/{id}', 'documentoController@obtenerDocumentos');
+Route::get('/detalle_documento/{id}', 'documentoController@detalleDocumento');
+Route::get('/datos_modal_documento', 'documentoController@datosModal');
+Route::post('/editar_documento', 'documentoController@editarDocumento');
+Route::get('/eliminar_documento/{id}', 'documentoController@eliminarDocumento');
+Route::get('/descargar_archivo/{id}', 'documentoController@descargarArchivo');

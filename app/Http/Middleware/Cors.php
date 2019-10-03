@@ -33,7 +33,13 @@ class Cors
         $response = $next($request);
         foreach($headers as $key => $value)
         {
-            $response->header($key, $value);
+            
+            if (method_exists($response, 'header')) {
+                
+                $response->header($key, $value);
+
+            }
+
         }
 
         return $response;
