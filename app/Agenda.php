@@ -33,4 +33,10 @@ class Agenda extends Model
 
     }
 
+    public function acta(){
+
+        return $this->hasOne('App\Acta', 'id_agenda', 'id');
+
+    }
+
 }

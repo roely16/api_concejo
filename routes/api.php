@@ -92,3 +92,10 @@ Route::get('/datos_modal_documento', 'documentoController@datosModal');
 Route::post('/editar_documento', 'documentoController@editarDocumento');
 Route::get('/eliminar_documento/{id}', 'documentoController@eliminarDocumento');
 Route::get('/descargar_archivo/{id}', 'documentoController@descargarArchivo');
+
+// Audios
+Route::post('/registrar_audio', 'audioController@registrarAudio');
+Route::get('/obtener_audios/{id}', 'audioController@obtenerAudios');
+Route::get('/eliminar_audio/{id}', 'audioController@eliminarAudio');
+Route::get('/detalle_audio/{id}', 'audioController@detalleAudio');
+Route::post('/editar_audio', 'audioController@editarAudio');

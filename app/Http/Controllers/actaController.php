@@ -41,7 +41,9 @@ class actaController extends Controller
         ];
 
         // Obtener agendas sin acta
-        $agendas = Agenda::all('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'id_estado', 'asistencia_congelada', 'descripcion', 'eliminada');
+        // $agendas = Agenda::all('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'id_estado', 'asistencia_congelada', 'descripcion', 'eliminada');
+
+        $agendas = Agenda::select('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'id_estado', 'asistencia_congelada', 'descripcion', 'eliminada')->where('id_estado', 5)->doesntHave('acta')->get();
 
         $data = [
             "numero_acta" => $no_acta,

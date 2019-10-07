@@ -248,6 +248,7 @@ class AgendaController extends Controller
 
         $acta = Agenda::find($id);
         $acta->estado;
+        $acta->tipo_agenda;
 
         return response()->json($acta);
 

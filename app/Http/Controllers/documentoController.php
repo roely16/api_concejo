@@ -7,6 +7,7 @@ use App\Documento;
 use App\Tipo_Documento;
 
 use Illuminate\Support\Facades\Storage;
+use DB;
 
 class documentoController extends Controller
 {
@@ -35,6 +36,8 @@ class documentoController extends Controller
         $documento->autor = $autor;
         $documento->descripcion = $descripcion;
         $documento->id_agenda = $request->id_agenda;
+        $documento->fecha_creacion = DB::raw('SYSDATE');
+        $documento->subido_por = $request->id_usuario;
         $documento->save();
 
         // $fileName = $request->file->getClientOriginalName();
@@ -48,6 +51,12 @@ class documentoController extends Controller
         $data = [];
 
         $documentos = Documento::where('id_agenda', $id)->with('tipo_documento')->get();
+
+        foreach ($documentos as &$documento) {
+            
+            $documento->persona->usuario;
+            
+        }
 
         $data["items"] = $documentos;
 
@@ -127,9 +136,13 @@ class documentoController extends Controller
 
     public function eliminarDocumento($id){
 
-        
+        $documento = Documento::find($id);        
 
-        return response()->json($id);
+        // Eliminar el archivo
+        Storage::delete($documento->archivo);
+        $documento->delete();
+
+        return response()->json($documento);
 
     }
 

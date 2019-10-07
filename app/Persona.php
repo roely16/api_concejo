@@ -27,4 +27,8 @@ class Persona extends Model
 
         return $this->belongsTo('App\Puesto', 'id_puesto');
     }
+
+    public function usuario(){
+        return $this->hasOne('App\Usuario', 'id_persona', 'id');
+    }
 }
