@@ -35,6 +35,10 @@ Route::post('/registrar_agenda', 'agendaController@registrarAgenda');
 Route::get('/detalle_agenda/{id}', 'agendaController@detalleAgenda');
 Route::post('/editar_agenda', 'agendaController@editarAgenda');
 Route::post('/eliminar_agenda', 'agendaController@eliminarAgenda');
+Route::get('/bitacora_agenda/{id}', 'agendacontroller@bitacoraCambios');
+
+// Agendas para Revisor
+Route::get('/obtener_agendas_analisis', 'agendaController@agendasEnAnalisis');
 
 // Actas
 Route::get('/datos_modal_acta', 'actaController@datosModalCreacion');
@@ -99,3 +103,6 @@ Route::get('/obtener_audios/{id}', 'audioController@obtenerAudios');
 Route::get('/eliminar_audio/{id}', 'audioController@eliminarAudio');
 Route::get('/detalle_audio/{id}', 'audioController@detalleAudio');
 Route::post('/editar_audio', 'audioController@editarAudio');
+
+// PDF
+Route::get('/fecha_agenda/{id}', 'mailController@fechaAgenda');

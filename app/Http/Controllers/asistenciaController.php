@@ -56,7 +56,7 @@ class asistenciaController extends Controller
 
         }
 
-        $agenda = Agenda::find($id, ['id', 'id_tipo', 'id_estado', 'asistencia_congelada', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha")]);
+        $agenda = Agenda::find($id, ['id', 'id_tipo', 'asistencia_congelada', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha")]);
         $agenda->tipo_agenda;
 
         $data["detalle_agenda"] = $agenda;

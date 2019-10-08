@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
 	<title>Acta</title>
+    
 </head>
 <body>
     <style>
@@ -27,25 +28,25 @@
         },
         li{
             margin-bottom: 10px
-        }
+        },
+        
     </style>
 	
-    <div class="no_acta">
+    <!-- <div class="no_acta">
         <div>
             Acto No. {{ $acta->numero_acta }} - {{ $acta->year }}
         </div>
         <div>
             -1-
         </div>
-    </div>
+    </div> -->
         
-    <div class="titulo">
+    <!-- <div class="titulo">
         <strong>ACTA NÚMERO {{ $no_acta_letras }}</strong>
-    </div>
+    </div> -->
     
     <div class="titulo">
-        <strong>SESIÓN ORDINARIA DEL CONCEJO DEL MUNICIPIO DE GUATEMA, CELEBRADA EL DÍA LUNES DIEZ DE JUNIO DEL AÑO DOS MIL DIECINUEVE</strong>
-        
+        <strong>SESIÓN {{ $tipo_agenda }} DEL CONCEJO DEL MUNICIPIO DE GUATEMALA, PARA CELEBRAR EL DÍA {{ $string_fecha }}</strong>        
     </div>
 
     <br><br>
@@ -58,11 +59,22 @@
     
     <br><br>
 
-    <ol style="padding-left: 1.8em;">
+    <ol>
         @foreach ($puntos_agenda as $punto)
-            <li>{{ $punto->descripcion }}</li>
+            <li style="page-break-inside: avoid;">{{ $punto->descripcion }}</li>
         @endforeach
     </ol>
+
+    <!-- @foreach($puntos_agenda as $key=>$punto)
+        <div class="row">
+            <div class="column">
+                {{ ++$key }}.
+            </div>
+            <div class="column2">
+                <p style="page-break-inside: avoid;">{{ $punto->descripcion }}</p>
+            </div>
+        </div>
+    @endforeach -->
 
 </body>
 </html>
