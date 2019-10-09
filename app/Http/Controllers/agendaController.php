@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Builder;
 
 use App\Agenda;
 // use App\Acta;
@@ -401,19 +402,51 @@ class AgendaController extends Controller
 
         $data = [];
 
+        // $agendas = Agenda::where('eliminada', null)->orderBy('id', 'desc')->get();
+
+        // foreach ($agendas as &$agenda) {
+            
+        //     $bitacora = Bitacora_Agenda::where('id_agenda', $agenda->id)->orderBy('id', 'desc')->first();
+
+        //     $agenda->bitacora = $bitacora;
+
+        //     $agenda->bitacora->estado;
+
+        // }
+
+        // $data["items"] = $agendas;
+
+        // $agendas = Agenda::where('eliminada', null)->orderBy('id', 'desc')->get();
+
+        // foreach ($agendas as &$agenda) {
+            
+        //     $agenda->bitacora_agenda;
+        // }
+
         $agendas = Agenda::where('eliminada', null)->orderBy('id', 'desc')->get();
+
+        $agendas_analisis = [];
 
         foreach ($agendas as &$agenda) {
             
-            $bitacora = Bitacora_Agenda::where('id_agenda', $agenda->id)->orderBy('id', 'desc')->first();
+            $bitacora_agenda = Bitacora_Agenda::where('id_agenda', $agenda->id)->orderBy('id', 'desc')->get();
 
-            $agenda->bitacora = $bitacora;
+            // $agenda->bitacora = $bitacora_agenda[0];
 
-            $agenda->bitacora->estado;
+            if ($bitacora_agenda[0]->id_estado == 2) {
+                
+                $agenda->bitacora = $bitacora_agenda[0];
+
+                $agenda->bitacora->estado;
+
+                $agendas_analisis [] = $agenda;
+
+            }
 
         }
 
-        $data["items"] = $agendas;
+        $data["items"] = $agendas_analisis;
+
         $data["fields"] = [
             [
                 "label" => "Fecha",

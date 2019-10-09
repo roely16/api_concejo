@@ -51,7 +51,7 @@ class puntoAgendaController extends Controller
 
             $punto_agenda->save();
 
-            $this->registrarBitacora($punto_agenda->id, 1);
+            $this->registrarBitacora($punto_agenda->id, 1, '', '', '', $request->id_persona);
 
         } catch (\Exception $e) {
            
@@ -72,7 +72,7 @@ class puntoAgendaController extends Controller
         $punto_agenda->save();
 
         // Registrar en la bitácora
-        $this->registrarBitacora($punto_agenda->id, 2, $request->original, $request->descripcion);
+        $this->registrarBitacora($punto_agenda->id, 2, $request->original, $request->descripcion, '', $request->id_persona);
 
         return response()->json($punto_agenda);
 
@@ -145,7 +145,7 @@ class puntoAgendaController extends Controller
                 $punto_agenda->save();
 
                 // Registrar en la bitácora
-                $this->registrarBitacora($punto_agenda->id, 3, '', '', $request->motivo);
+                $this->registrarBitacora($punto_agenda->id, 3, '', '', $request->motivo, $request->id_persona);
 
             }else{
 
@@ -176,7 +176,7 @@ class puntoAgendaController extends Controller
 
     }
 
-    public function registrarBitacora($id_punto, $id_accion, $original = '', $edited = '', $motivo_eliminacion = ''){
+    public function registrarBitacora($id_punto, $id_accion, $original = '', $edited = '', $motivo_eliminacion = '', $usuario){
 
         $bitacora_punto = new Bitacora_Punto();
         $bitacora_punto->id_punto = $id_punto;
@@ -185,7 +185,7 @@ class puntoAgendaController extends Controller
         $bitacora_punto->modificado = $edited;
         $bitacora_punto->motivo_eliminacion = $motivo_eliminacion;
         $bitacora_punto->fecha = DB::raw('SYSDATE');
-        $bitacora_punto->usuario = 1;
+        $bitacora_punto->usuario = $usuario;
 
         $bitacora_punto->save();
 

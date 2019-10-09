@@ -10,4 +10,10 @@ class Estado_Agenda extends Model
     protected $primary_key = 'id';
 
     public $timestamps = false;
+
+    // public function agendas(){
+
+    //     return $this->hasMany('App\Agenda', 'id_tipo', 'id');
+
+    // }
 }
