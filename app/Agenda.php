@@ -42,7 +42,7 @@ class Agenda extends Model
 
     public function bitacora_agenda(){
 
-        return $this->hasMany('App\Bitacora_Agenda', 'id_agenda')->select('id', 'id_agenda', 'id_estado', DB::raw("to_char(fecha, 'dd/mm/yyyy hh24:mi:ss') as fecha"), 'id_usuario');
+        return $this->hasMany('App\Bitacora_Agenda', 'id_agenda')->select('id', 'id_agenda', 'id_estado', DB::raw("to_char(fecha, 'dd/mm/yyyy hh24:mi:ss') as fecha"), 'id_usuario')->orderBy('id');
 
     }
 

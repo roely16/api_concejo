@@ -10,6 +10,7 @@ use App\Acta;
 use App\Punto_Agenda;
 use App\Punto_Acta;
 use App\Bitacora_Punto_Acta;
+use App\Bitacora_Agenda;
 
 use DB;
 
@@ -43,11 +44,26 @@ class actaController extends Controller
         // Obtener agendas sin acta
         // $agendas = Agenda::all('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'id_estado', 'asistencia_congelada', 'descripcion', 'eliminada');
 
-        $agendas = Agenda::select('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'id_estado', 'asistencia_congelada', 'descripcion', 'eliminada')->where('id_estado', 5)->doesntHave('acta')->get();
+        $agendas = Agenda::select('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'asistencia_congelada', 'descripcion', 'eliminada')->doesntHave('acta')->where('asistencia_congelada', 'S')->get();
+
+        // Buscar solo las agendas con estado finalizado
+        $agendas_finalizadas = [];
+
+        foreach ($agendas as &$agenda) {
+            
+            $bitacora = Bitacora_Agenda::where('id_agenda', $agenda->id)->orderBy('id', 'desc')->first();
+            
+            if ($bitacora->id_estado == 5) {
+                # code...
+                $agenda->bitacora = $bitacora;
+                $agendas_finalizadas [] = $agenda;
+            }
+            
+        }
 
         $data = [
             "numero_acta" => $no_acta,
-            "agendas" => $agendas
+            "agendas" => $agendas_finalizadas
         ];
 
         return response()->json($data);
@@ -137,7 +153,7 @@ class actaController extends Controller
         $acta = Acta::find($id);
         $acta->agenda;
 
-        $agendas = Agenda::all('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'id_estado', 'asistencia_congelada', 'descripcion', 'eliminada');
+        $agendas = Agenda::all('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'asistencia_congelada', 'descripcion', 'eliminada');
 
         $data["acta"] = $acta;
         $data["agendas"] = $agendas;

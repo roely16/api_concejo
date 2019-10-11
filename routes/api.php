@@ -35,10 +35,15 @@ Route::post('/registrar_agenda', 'agendaController@registrarAgenda');
 Route::get('/detalle_agenda/{id}', 'agendaController@detalleAgenda');
 Route::post('/editar_agenda', 'agendaController@editarAgenda');
 Route::post('/eliminar_agenda', 'agendaController@eliminarAgenda');
-Route::get('/bitacora_agenda/{id}', 'agendacontroller@bitacoraCambios');
+Route::get('/bitacora_agenda/{id}', 'agendaController@bitacoraCambios');
+Route::get('/obtener_concejo', 'agendaController@obtenerConcejo');
+Route::post('/enviar_agenda_concejo', 'agendaController@enviarAgendaConcejo');
+Route::get('/descargar_archivo_correo_agenda/{id}', 'agendaController@descargarArchivoCorreo');
+Route::post('/finalizar_agenda', 'agendaController@finalizarAgenda');
 
 // Agendas para Revisor
 Route::get('/obtener_agendas_analisis', 'agendaController@agendasEnAnalisis');
+Route::post('/aprobar_agenda', 'agendaController@aprobarAgenda');
 
 // Actas
 Route::get('/datos_modal_acta', 'actaController@datosModalCreacion');
@@ -106,3 +111,6 @@ Route::post('/editar_audio', 'audioController@editarAudio');
 
 // PDF
 Route::get('/fecha_agenda/{id}', 'mailController@fechaAgenda');
+
+// Buscador
+Route::post('/buscar', 'buscadorController@buscarTexto');

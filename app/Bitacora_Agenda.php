@@ -26,4 +26,10 @@ class Bitacora_Agenda extends Model
     public function agenda(){
         return $this->belongsTo('App\Agenda', 'id_agenda');
     }
+
+    public function historial_correos(){
+
+        return $this->hasMany('App\Bitacora_Correo', 'id_bitacora', 'id')->orderBy('id_persona');
+
+    }
 }

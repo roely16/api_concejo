@@ -4,13 +4,23 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Mail;
+use Storage;
 
 use App\Agenda;
 // use App\Acta;
 use DB;
 use PDF;
 use App\Bitacora_Agenda;
+use App\Bitacora_Correo;
 use App\Estado_Agenda;
+use App\Persona;
+
+// Envio de correos
+use App\Mail\AprobacionAgenda;
+
+// Envio de correo con la agenda
+use App\Mail\AgendaConcejo;
 
 class AgendaController extends Controller
 {
@@ -366,6 +376,19 @@ class AgendaController extends Controller
         foreach ($bitacora_agenda as &$item) {
             $item->estado;
             $item->persona->usuario;
+
+            // Si el estado es 4
+            if ($item->id_estado == 4) {
+                
+                $item->correos = true;
+                $historial = $item->historial_correos;
+
+                foreach ($historial as &$registro) {
+                    
+                    $registro->persona->puesto;
+
+                }
+            }
         }
 
         $data["items"] = $bitacora_agenda;
@@ -394,6 +417,29 @@ class AgendaController extends Controller
         ];
 
         return response()->json($data);
+
+    }
+
+    public function descargarArchivoCorreo($id){
+
+        $bitacora_correo = Bitacora_Correo::where('id_bitacora', $id)->first();
+
+        return Storage::download('agendas/'.$bitacora_correo->archivo, $bitacora_correo->nombre_archivo);
+
+        // return response()->json($bitacora_correo);
+
+    }
+
+    public function finalizarAgenda(Request $request){
+
+        $bitacora_agenda = new Bitacora_Agenda();
+        $bitacora_agenda->id_agenda = $request->id_agenda;
+        $bitacora_agenda->id_estado = 5;
+        $bitacora_agenda->fecha = DB::raw('SYSDATE');
+        $bitacora_agenda->id_usuario = $request->id_usuario;
+        $bitacora_agenda->save();
+
+        return response()->json($bitacora_agenda);
 
     }
 
@@ -473,4 +519,160 @@ class AgendaController extends Controller
         return response()->json($data);
 
     }
+
+    public function aprobarAgenda(Request $request){
+
+        $agenda = Agenda::find($request->id);
+
+        // Buscar en la bitacora quien envio la agenda para analisis por ultima vez para que ha esta persona se le envie el correo
+        $bitacora_agenda = Bitacora_Agenda::where('id_agenda', $request->id)->where('id_estado', 2)->orderBy('id', 'desc')->first();
+
+        // Responsable de la aprobacion
+        $persona = Persona::find($request->id_persona);
+
+
+        $data = new \stdClass();
+        $data->fecha = $agenda->fecha;
+        $data->responsable_aprobacion = $persona->nombre . ' ' . $persona->apellido;
+
+        // Enviar el correo de aprobación de la agenda
+        Mail::to($bitacora_agenda->persona->email)->send(new AprobacionAgenda($data));
+        
+        // Escribir en la bitacora de la agenda quien lo esta aprobando
+        $bitacora_agenda = new Bitacora_Agenda();
+        $bitacora_agenda->id_agenda = $request->id;
+        $bitacora_agenda->id_estado = 3;
+        $bitacora_agenda->fecha = DB::raw('SYSDATE');
+        $bitacora_agenda->id_usuario = $request->id_persona;
+        $bitacora_agenda->save();
+
+        return response()->json($persona);
+
+    }
+
+
+    // Envio de la agenda al concejo
+
+    public function obtenerConcejo(){
+
+        $concejo = Persona::where('enviar_agenda', 'S')->with('puesto')->orderBy('id', 'asc')->get();
+
+        foreach ($concejo as &$item) {
+            $item->enviar = true;
+        }
+
+        $data = [];
+        $data["items"] = $concejo;
+
+        $data["fields"] = [
+            [
+                "label" => "Persona",
+                "key" => "nombre",
+                "sortable" => true
+            ],
+            [
+                "label" => "Puesto",
+                "key" => "puesto",
+                "sortable" => true
+            ],
+            [
+                "label" => "Email",
+                "key" => "email",
+                "sortable" => true
+            ],
+            [
+                "label" => "Enviar Agenda",
+                "key" => "enviar_agenda",
+                "class" => "text-right"
+            ]
+        ];
+
+        return response()->json($data);
+
+    }
+
+    public function enviarAgendaConcejo(Request $request){
+
+        $personas = $request->personas;
+        $id_agenda = $request->id_agenda;
+
+        // Construcción del archivo a enviar
+        $puntos = Agenda::find($id_agenda)->puntos_agenda;
+        $agenda = Agenda::find($id_agenda);
+
+        // Fecha de la agenda
+        setlocale(LC_ALL, 'es_ES');
+        $array_fecha = preg_split("#/#", $agenda->fecha);
+        $day = $array_fecha[0];
+        $month = $array_fecha[1];
+        $year = $array_fecha[2];
+
+        $f = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);
+
+        $string_fecha = strtoupper(strftime('%A', strtotime($year.'/'.$month.'/'.$day)) . ' ' . intval($day) . ' DE ' . strftime('%B', strtotime($year.'/'.$month.'/'.$day)) . ' DEL AÑO ' . $f->format($year));
+        
+        // Tipo de Agenda
+        $tipo = $agenda->tipo_agenda->nombre;
+
+        $data = [
+            'title' => 'Agenda',
+            'agenda' => $agenda,
+            'puntos_agenda' => $puntos,
+            'string_fecha' => $string_fecha,
+            'tipo_agenda' =>  strtoupper($tipo)
+        ];
+
+        // Creación del PDF
+        $pdf = PDF::loadView('pdf.agenda', $data);
+        $pdf->setPaper('legal', 'portrait');
+
+        // Se almace la agenda
+        $content = $pdf->download()->getOriginalContent();
+        $unique_id_file = time();
+        Storage::put('agendas/'.$unique_id_file, $content);
+        $file_name = "Agenda.pdf";
+
+        $correo_agenda = new \stdClass();
+        $correo_agenda->nombre_archivo =  $unique_id_file;
+        $correo_agenda->etiqueta_archivo = $file_name;
+
+        $correos = [];
+
+        foreach ($personas as $persona) {
+            
+            $correos [] = $persona["email"];
+
+        }
+
+        Mail::to($correos)->send(new AgendaConcejo($correo_agenda));
+
+        // Cambiar el estado de la agenda a enviado
+        $bitacora_agenda = new Bitacora_Agenda();
+        $bitacora_agenda->id_agenda = $id_agenda;
+        $bitacora_agenda->id_estado = 4;
+        $bitacora_agenda->fecha = DB::raw('SYSDATE');
+        $bitacora_agenda->id_usuario = 1;
+        $bitacora_agenda->save();
+
+        // Escribir en la bitacora de correos
+        
+        foreach ($personas as $persona) {
+
+            $bitacora_correo = new Bitacora_Correo();
+
+            $bitacora_correo->id_bitacora = $bitacora_agenda->id;
+            $bitacora_correo->id_persona = $persona["id"];
+            $bitacora_correo->archivo = $unique_id_file;
+            $bitacora_correo->enviado = 'S';
+            $bitacora_correo->fecha_envio = DB::raw('SYSDATE');
+            $bitacora_correo->enviado_por = 1;
+            $bitacora_correo->nombre_archivo = $file_name;
+            $bitacora_correo->save();
+
+        }
+
+        return response()->json($request);
+
+    }
+
 }
