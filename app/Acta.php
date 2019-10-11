@@ -18,4 +18,10 @@ class Acta extends Model
 
     }
 
+    public function puntos_acta(){
+
+        return $this->hasMany('App\Punto_Acta', 'id_acta', 'id');
+
+    }
+
 }

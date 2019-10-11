@@ -53,6 +53,7 @@ Route::get('/detalle_acta/{id}', 'actaController@detalleActa');
 Route::post('/editar_acta', 'actaController@editarActa');
 Route::get('/puntos_agenda_acta/{id}', 'actaController@puntosAgenda');
 Route::post('/detalle_punto_acta_agenda', 'actaController@detallePuntoActa');
+Route::get('/vista_previa_acta/{id}', 'actaController@vistaPreviaActa');
 
 // Mail
 Route::get('/pdf_acta/{id_acta}', 'mailController@pdfActa');

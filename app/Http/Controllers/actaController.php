@@ -13,6 +13,7 @@ use App\Bitacora_Punto_Acta;
 use App\Bitacora_Agenda;
 
 use DB;
+use PDF;
 
 class actaController extends Controller
 {
@@ -324,6 +325,21 @@ class actaController extends Controller
         $this->registrarBitacora($punto_acta->id, 3, $request->descripcion, '', $request->motivo_eliminacion);
 
         return response()->json($punto_acta);
+
+    }
+
+    public function vistaPreviaActa($id){
+
+        $acta = Acta::find($id);
+        $acta->puntos_acta;
+        $acta->agenda;
+        $acta->agenda->puntos_agenda;
+
+        $pdf = PDF::loadView('pdf.acta', $acta);
+        $pdf->setPaper('legal', 'portrait');
+
+        // return response()->json($acta);
+        return $pdf->stream("dompdf_out.pdf", array("Attachment" => false));
 
     }
 
