@@ -11,6 +11,7 @@ use App\Punto_Agenda;
 use App\Punto_Acta;
 use App\Bitacora_Punto_Acta;
 use App\Bitacora_Agenda;
+use App\Persona;
 
 use DB;
 use PDF;
@@ -332,13 +333,89 @@ class actaController extends Controller
 
         $acta = Acta::find($id);
         $acta->puntos_acta;
-        $acta->agenda;
-        $acta->agenda->puntos_agenda;
+        $acta->agenda->tipo_agenda;
 
-        $pdf = PDF::loadView('pdf.acta', $acta);
+        $acta->agenda->puntos_agenda = Agenda::find($acta->agenda->id)->puntos_agenda()->where('eliminado', null)->get();
+
+        // Asistencia
+        $personas = Persona::has('puesto')->orderBy('id_puesto')->with('puesto')->get();
+
+        // Puntos del Acta
+        $puntos_agenda = $acta->agenda->puntos_agenda;
+
+        $ordinales = [
+            "primero", "segundo", "tercero", "cuarto", "quinto", "sexto", "séptimo", "octavo", "noveno"
+        ];
+
+        $ordinales_centenas = [
+            "décimo", "vigésimo", "trigésimo", "cuadragésimo", "quincuagésimo", "sexagésimo", "septuagésimo", "octogésimo", "nonagésimo"
+        ];
+
+        foreach ($puntos_agenda as &$punto_agenda) {
+
+            $punto_agenda->punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->first();
+
+            $cantidad_digitos = strlen((string)$punto_agenda->orden);
+
+            if ($cantidad_digitos == 1) {
+                
+                $punto_agenda->ordinal = $ordinales[$punto_agenda->orden - 1];
+
+            }elseif($cantidad_digitos == 2){
+
+                $digits = (string)$punto_agenda->orden;
+                $primero = $digits[0];
+                $segundo = $digits[1];
+
+                if ($segundo > 0) {
+                   
+                    $punto_agenda->ordinal = $ordinales_centenas[$primero - 1] . " " . $ordinales[$segundo - 1];
+
+                }else{
+
+                    $punto_agenda->ordinal = $ordinales_centenas[$primero - 1];
+
+                }
+               
+            }
+
+            $punto_agenda->cantidad_digitos = $cantidad_digitos;
+            
+            if ($punto_agenda->punto_acta) {
+
+                $punto_agenda->punto_acta->texto = substr_replace( $punto_agenda->punto_acta->descripcion, "<strong>".strtoupper($punto_agenda->ordinal).": </strong>", 3, 0 );
+
+            }
+            
+        }
+
+        setlocale(LC_ALL, 'es_ES');
+        $array_fecha = preg_split("#/#", $acta->agenda->fecha);
+        $day = $array_fecha[0];
+        $month = $array_fecha[1];
+        $year = $array_fecha[2];
+
+        $format_number = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);
+
+        $str_no_acta = strtoupper($format_number->format($acta->no_acta));
+        $str_fecha = strtoupper(strftime('%A', strtotime($year.'/'.$month.'/'.$day)) . ' ' . $format_number->format(intval($day)) . ' DE ' . strftime('%B', strtotime($year.'/'.$month.'/'.$day)) . ' DEL AÑO ' . $format_number->format($year));
+
+        // Cardinales
+        // $format_cardinal = new \NumberFormatter("es", \NumberFormatter::ORDINAL);
+
+
+        $data = [
+            "str_no_acta" => $str_no_acta,
+            "str_fecha" => $str_fecha,
+            "acta" => $acta,
+            "asistencia" => $personas,
+            "puntos_acta" => $puntos_agenda
+        ];
+
+        $pdf = PDF::loadView('pdf.acta', $data);
         $pdf->setPaper('legal', 'portrait');
 
-        // return response()->json($acta);
+        // return response()->json($data);
         return $pdf->stream("dompdf_out.pdf", array("Attachment" => false));
 
     }
