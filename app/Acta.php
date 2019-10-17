@@ -24,4 +24,10 @@ class Acta extends Model
 
     }
 
+    public function bitacora(){
+
+        return $this->hasMany('App\Bitacora_Acta', 'id_acta');
+
+    }
+
 }

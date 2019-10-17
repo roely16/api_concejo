@@ -7,7 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class AgendaConcejo extends Mailable
+class ActaRevision extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -30,10 +30,11 @@ class AgendaConcejo extends Mailable
      */
     public function build()
     {   
-        $location = storage_path("app/agendas/" . $this->data->nombre_archivo);
 
-        return $this->view('mails.agenda_concejo')->attach($location, [
-            'as' => $this->data->etiqueta_archivo,
+        $location = storage_path("app/actas/" . $this->data->unique_id_file);
+
+        return $this->view('mails.acta_revision')->attach($location, [
+            'as' => $this->data->file_name,
             'mime' => 'application/pdf',
         ]);
     }

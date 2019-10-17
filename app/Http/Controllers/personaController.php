@@ -135,4 +135,21 @@ class personaController extends Controller
 
     }
 
+    public function personasRevisarActa(){
+
+        $rol = Rol::where('key', 'revisor_actas')->first();
+
+        $personas = Persona::where('id_rol', $rol->id)->get();
+
+        foreach ($personas as &$persona) {
+            
+            $persona->rol;
+            $persona->enviar_correo = true;
+
+        }
+
+        return response()->json($personas);
+
+    }
+
 }

@@ -49,11 +49,13 @@ Route::post('/aprobar_agenda', 'agendaController@aprobarAgenda');
 Route::get('/datos_modal_acta', 'actaController@datosModalCreacion');
 Route::post('/registrar_acta', 'actaController@registrarActa');
 Route::get('/obtener_actas', 'actaController@obtenerActas');
-Route::get('/detalle_acta/{id}', 'actaController@detalleActa');
+Route::get('/detalle_acta/{id}/{id_punto?}', 'actaController@detalleActa');
 Route::post('/editar_acta', 'actaController@editarActa');
 Route::get('/puntos_agenda_acta/{id}', 'actaController@puntosAgenda');
 Route::post('/detalle_punto_acta_agenda', 'actaController@detallePuntoActa');
 Route::get('/vista_previa_acta/{id}', 'actaController@vistaPreviaActa');
+Route::post('/enviar_acta_revision', 'actaController@enviarRevision');
+Route::get('/historial_acta/{id}', 'actaController@historialActa');
 
 // Mail
 Route::get('/pdf_acta/{id_acta}', 'mailController@pdfActa');
@@ -77,6 +79,7 @@ Route::post('/editar_persona', 'personaController@editarPersona');
 Route::get('/permisos_usuario/{id}', 'personaController@permisosUsuario');
 Route::post('/registrar_persona', 'personaController@registrarPersona');
 Route::get('/personas_correo', 'personaController@personasCorreo');
+Route::get('/personas_revisar_acta', 'personaController@personasRevisarActa');
 
 // Bitacora
 Route::get('/bitacora_correo', 'bitacoraController@bitacoraCorreo');

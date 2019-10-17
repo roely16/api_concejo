@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
  
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 use App\Tipo_Acta;
 use App\Agenda;
@@ -12,9 +13,14 @@ use App\Punto_Acta;
 use App\Bitacora_Punto_Acta;
 use App\Bitacora_Agenda;
 use App\Persona;
+use App\Bitacora_Acta;
+use App\Bitacora_Correo;
+
+use App\Mail\ActaRevision;
 
 use DB;
 use PDF;
+use Storage;
 
 class actaController extends Controller
 {
@@ -148,7 +154,7 @@ class actaController extends Controller
 
     }
 
-    public function detalleActa($id){
+    public function detalleActa($id, $id_punto = null){
 
         $data = [];
 
@@ -157,8 +163,16 @@ class actaController extends Controller
 
         $agendas = Agenda::all('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'asistencia_congelada', 'descripcion', 'eliminada');
 
+        if ($id_punto) {
+            # code...
+            $punto_agenda = Punto_Agenda::find($id_punto);
+            $data["punto_agenda"] = $punto_agenda;
+        }
+        
+
         $data["acta"] = $acta;
         $data["agendas"] = $agendas;
+        
 
         return response()->json($data);
 
@@ -207,7 +221,16 @@ class actaController extends Controller
 
         $acta = Acta::find($id);
         $acta->agenda->estado;
-        $acta->agenda->puntos_agenda;
+        $puntos_agenda = $acta->agenda->puntos_agenda;
+
+        foreach ($acta->agenda->puntos_agenda as &$punto_agenda) {
+            
+            $punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->first();
+
+            $punto_agenda->punto_acta = $punto_acta;
+
+        }
+
         $acta->agenda->tipo_agenda;
 
         return response()->json($acta);
@@ -400,9 +423,134 @@ class actaController extends Controller
         $str_no_acta = strtoupper($format_number->format($acta->no_acta));
         $str_fecha = strtoupper(strftime('%A', strtotime($year.'/'.$month.'/'.$day)) . ' ' . $format_number->format(intval($day)) . ' DE ' . strftime('%B', strtotime($year.'/'.$month.'/'.$day)) . ' DEL AÑO ' . $format_number->format($year));
 
-        // Cardinales
-        // $format_cardinal = new \NumberFormatter("es", \NumberFormatter::ORDINAL);
+        $data = [
+            "str_no_acta" => $str_no_acta,
+            "str_fecha" => $str_fecha,
+            "acta" => $acta,
+            "asistencia" => $personas,
+            "puntos_acta" => $puntos_agenda
+        ];
 
+        $pdf = PDF::loadView('pdf.acta', $data);
+        $pdf->setPaper('legal', 'portrait');
+
+        return $pdf->stream("dompdf_out.pdf", array("Attachment" => false));
+
+    }
+
+    public function enviarRevision(Request $request){
+
+        $destinos = $request->destinos;
+
+        $response_file = $this->almacenarActa($request->id_acta);
+
+        $correos = [];
+
+        foreach ($destinos as $destino) {
+            
+            $correos [] = $destino["email"];
+
+        }
+
+        Mail::to($correos)->send(new ActaRevision($response_file));
+
+        // Registrar en la bitacora del acta
+        $bitacora_acta = new Bitacora_Acta();
+        $bitacora_acta->id_acta = $request->id_acta;
+        $bitacora_acta->id_estado = 2;
+        $bitacora_acta->fecha = DB::raw('SYSDATE');
+        $bitacora_acta->id_usuario = 1;
+        $bitacora_acta->save();
+
+        // Registrar en la bitacora del correo
+        foreach ($destinos as $destino) {
+            
+            $bitacora_correo = new Bitacora_Correo();
+            $bitacora_correo->id_persona = $destino["id"];
+            $bitacora_correo->archivo = $response_file->unique_id_file;
+            $bitacora_correo->enviado = 'S';
+            $bitacora_correo->fecha_envio = DB::raw('SYSDATE');
+            $bitacora_correo->enviado_por = 1;
+            $bitacora_correo->nombre_archivo = $response_file->file_name;
+            $bitacora_correo->id_bitacora_acta = $bitacora_acta->id;
+            $bitacora_correo->save();
+
+        }
+
+        return response()->json($correos);
+
+    }
+
+    public function almacenarActa($id){
+
+        $acta = Acta::find($id);
+        $acta->puntos_acta;
+        $acta->agenda->tipo_agenda;
+
+        $acta->agenda->puntos_agenda = Agenda::find($acta->agenda->id)->puntos_agenda()->where('eliminado', null)->get();
+
+        // Asistencia
+        $personas = Persona::has('puesto')->orderBy('id_puesto')->with('puesto')->get();
+
+        // Puntos del Acta
+        $puntos_agenda = $acta->agenda->puntos_agenda;
+
+        $ordinales = [
+            "primero", "segundo", "tercero", "cuarto", "quinto", "sexto", "séptimo", "octavo", "noveno"
+        ];
+
+        $ordinales_centenas = [
+            "décimo", "vigésimo", "trigésimo", "cuadragésimo", "quincuagésimo", "sexagésimo", "septuagésimo", "octogésimo", "nonagésimo"
+        ];
+
+        foreach ($puntos_agenda as &$punto_agenda) {
+
+            $punto_agenda->punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->first();
+
+            $cantidad_digitos = strlen((string)$punto_agenda->orden);
+
+            if ($cantidad_digitos == 1) {
+                
+                $punto_agenda->ordinal = $ordinales[$punto_agenda->orden - 1];
+
+            }elseif($cantidad_digitos == 2){
+
+                $digits = (string)$punto_agenda->orden;
+                $primero = $digits[0];
+                $segundo = $digits[1];
+
+                if ($segundo > 0) {
+                   
+                    $punto_agenda->ordinal = $ordinales_centenas[$primero - 1] . " " . $ordinales[$segundo - 1];
+
+                }else{
+
+                    $punto_agenda->ordinal = $ordinales_centenas[$primero - 1];
+
+                }
+               
+            }
+
+            $punto_agenda->cantidad_digitos = $cantidad_digitos;
+            
+            if ($punto_agenda->punto_acta) {
+
+                $punto_agenda->punto_acta->texto = substr_replace( $punto_agenda->punto_acta->descripcion, "<strong>".strtoupper($punto_agenda->ordinal).": </strong>", 3, 0 );
+
+            }
+            
+        }
+
+        setlocale(LC_ALL, 'es_ES');
+        $array_fecha = preg_split("#/#", $acta->agenda->fecha);
+        $day = $array_fecha[0];
+        $month = $array_fecha[1];
+        $year = $array_fecha[2];
+
+        $format_number = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);
+
+        $str_no_acta = strtoupper($format_number->format($acta->no_acta));
+        $str_fecha = strtoupper(strftime('%A', strtotime($year.'/'.$month.'/'.$day)) . ' ' . $format_number->format(intval($day)) . ' DE ' . strftime('%B', strtotime($year.'/'.$month.'/'.$day)) . ' DEL AÑO ' . $format_number->format($year));
 
         $data = [
             "str_no_acta" => $str_no_acta,
@@ -415,8 +563,29 @@ class actaController extends Controller
         $pdf = PDF::loadView('pdf.acta', $data);
         $pdf->setPaper('legal', 'portrait');
 
-        // return response()->json($data);
-        return $pdf->stream("dompdf_out.pdf", array("Attachment" => false));
+        $content = $pdf->download()->getOriginalContent();
+        $unique_id_file = time();
+        Storage::put('actas/'.$unique_id_file, $content);
+        $file_name = "Acta.pdf";
+
+        $data_file = new \stdClass();
+        $data_file->unique_id_file = $unique_id_file;
+        $data_file->file_name = $file_name;
+
+        return $data_file;
+
+    }
+
+    public function historialActa($id){
+
+        $data = [];
+
+        $bitacora_acta = Bitacora_Acta::where('id_acta', $id)->select('id', 'id_acta', 'id_estado', DB::raw("to_char(fecha, 'dd/mm/yyyy hh24:mi:ss') as fecha"), 'id_usuario')->orderBy('id')->get();
+
+        $data["items"] = $bitacora_acta;
+
+
+        return response()->json($data);
 
     }
 
