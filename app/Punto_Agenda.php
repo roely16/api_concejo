@@ -23,4 +23,8 @@ class Punto_Agenda extends Model
         
     }
 
+    public function punto_acta(){
+        return $this->hasOne('App\Punto_Acta', 'id_punto_agenda', 'id');
+    }
+
 }

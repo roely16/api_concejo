@@ -56,6 +56,7 @@ Route::post('/detalle_punto_acta_agenda', 'actaController@detallePuntoActa');
 Route::get('/vista_previa_acta/{id}', 'actaController@vistaPreviaActa');
 Route::post('/enviar_acta_revision', 'actaController@enviarRevision');
 Route::get('/historial_acta/{id}', 'actaController@historialActa');
+Route::get('/descargar_archivo_correo_acta/{id}', 'actaController@descargarArchivoCorreo');
 
 // Mail
 Route::get('/pdf_acta/{id_acta}', 'mailController@pdfActa');
@@ -118,3 +119,12 @@ Route::get('/fecha_agenda/{id}', 'mailController@fechaAgenda');
 
 // Buscador
 Route::post('/buscar', 'buscadorController@buscarTexto');
+
+// Descargas
+Route::get('/descargar_archivo/{id}', 'descargaController@descargarArchivo');
+
+// Actas en Revision 
+Route::get('/obtener_actas_revision', 'actaController@actasRevision');
+Route::post('/marcar_punto_revisado', 'actaController@marcarRevisado');
+Route::get('/puntos_agenda_acta_revisar/{id}', 'actaController@puntosAgendaRevisar');
+Route::post('/aprobar_acta', 'actaController@aprobarActa');

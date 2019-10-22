@@ -94,6 +94,8 @@ class actaController extends Controller
                 return response()->json('Error al registrar');
             }
 
+            $this->registrarBitacoraActa($acta->id, 1, 1);
+
         } catch (\Exception $e) {
             
             $error = [
@@ -118,6 +120,12 @@ class actaController extends Controller
 
         foreach ($actas as &$acta) {
             
+            $bitacora = Bitacora_Acta::where('id_acta', $acta->id)->orderBy('id', 'desc')->first();
+
+            $acta->bitacora = $bitacora;
+
+            $acta->bitacora->estado;
+
             $acta->agenda->tipo_agenda;
         }
 
@@ -169,6 +177,9 @@ class actaController extends Controller
             $data["punto_agenda"] = $punto_agenda;
         }
         
+        $bitacora = Bitacora_Acta::where('id_acta', $acta->id)->orderBy('id', 'desc')->first();
+        $acta->bitacora = $bitacora;
+        $acta->bitacora->estado;
 
         $data["acta"] = $acta;
         $data["agendas"] = $agendas;
@@ -268,7 +279,7 @@ class actaController extends Controller
         $punto_acta->descripcion = $request->descripcion;
         $punto_acta->save();
 
-        $this->registrarBitacora($punto_acta->id, 1);
+        $this->registrarBitacora($punto_acta->id, 1, '', '', '', 1);
 
         return response()->json($punto_acta);
 
@@ -280,13 +291,13 @@ class actaController extends Controller
         $punto_acta->descripcion = $request->descripcion;
         $punto_acta->save();
 
-        $this->registrarBitacora($punto_acta->id, 2, $request->original, $request->descripcion, '');
+        $this->registrarBitacora($punto_acta->id, 2, $request->original, $request->descripcion, '', $request->id_usuario);
 
         return response()->json($punto_acta);
 
     }
 
-    public function registrarBitacora($id_punto, $id_accion, $original = '', $edited = '', $motivo_eliminacion = ''){
+    public function registrarBitacora($id_punto, $id_accion, $original = '', $edited = '', $motivo_eliminacion = '', $id_usuario){
 
         $bitacora_punto = new Bitacora_Punto_Acta();
         $bitacora_punto->id_punto = $id_punto;
@@ -295,7 +306,7 @@ class actaController extends Controller
         $bitacora_punto->modificado = $edited;
         $bitacora_punto->motivo_eliminacion = $motivo_eliminacion;
         $bitacora_punto->fecha = DB::raw('SYSDATE');
-        $bitacora_punto->usuario = 1;
+        $bitacora_punto->usuario = $id_usuario;
 
         $bitacora_punto->save();
 
@@ -346,7 +357,7 @@ class actaController extends Controller
         $punto_acta->eliminado = 'S';
         $punto_acta->save();
 
-        $this->registrarBitacora($punto_acta->id, 3, $request->descripcion, '', $request->motivo_eliminacion);
+        $this->registrarBitacora($punto_acta->id, 3, $request->descripcion, '', $request->motivo_eliminacion, 1);
 
         return response()->json($punto_acta);
 
@@ -367,11 +378,11 @@ class actaController extends Controller
         $puntos_agenda = $acta->agenda->puntos_agenda;
 
         $ordinales = [
-            "primero", "segundo", "tercero", "cuarto", "quinto", "sexto", "séptimo", "octavo", "noveno"
+            "PRIMERO", "SEGUNDO", "TERCERO", "CUARTO", "QUINTO", "SEXTO", "SÉPTIMO", "OCTAVO", "NOVENO"
         ];
 
         $ordinales_centenas = [
-            "décimo", "vigésimo", "trigésimo", "cuadragésimo", "quincuagésimo", "sexagésimo", "septuagésimo", "octogésimo", "nonagésimo"
+            "DÉCIMO", "VIGÉSIMO", "TRIGÉSIMO", "CUADRAGÉISMO", "QUINCUAGÉSIMO", "SEXAGÉSIMO", "SEPTUAGÉSIMO", "OCTOGÉSIMO", "NONAGÉSIMO"
         ];
 
         foreach ($puntos_agenda as &$punto_agenda) {
@@ -406,7 +417,7 @@ class actaController extends Controller
             
             if ($punto_agenda->punto_acta) {
 
-                $punto_agenda->punto_acta->texto = substr_replace( $punto_agenda->punto_acta->descripcion, "<strong>".strtoupper($punto_agenda->ordinal).": </strong>", 3, 0 );
+                $punto_agenda->punto_acta->texto = substr_replace( $punto_agenda->punto_acta->descripcion, "<strong>".$punto_agenda->ordinal.": </strong>", 3, 0 );
 
             }
             
@@ -582,10 +593,184 @@ class actaController extends Controller
 
         $bitacora_acta = Bitacora_Acta::where('id_acta', $id)->select('id', 'id_acta', 'id_estado', DB::raw("to_char(fecha, 'dd/mm/yyyy hh24:mi:ss') as fecha"), 'id_usuario')->orderBy('id')->get();
 
+        foreach ($bitacora_acta as &$item) {
+            
+            $item->estado;
+            $item->persona->usuario;
+
+            if ($item->id_estado == 2) {
+                
+                $item->correos = true;
+                $historial = $item->historial_correos;
+
+                foreach ($historial as &$registro) {
+                    
+                    $registro->persona->rol;
+
+                }
+            }
+
+        }
+
         $data["items"] = $bitacora_acta;
 
+        $data["fields"] = [
+            [
+                "label" => "Fecha",
+                "key" => "fecha",
+                "sortable" => true
+            ],
+            [
+                "label" => "Estado",
+                "key" => "estado",
+                "sortable" => true
+            ],
+            [
+                "label" => "Usuario",
+                "key" => "persona",
+                "sortable" => true
+            ],
+            [
+                "label" => "Acciones",
+                "key" => "actions",
+                "class" => "text-right"
+            ]
+        ];
 
         return response()->json($data);
+
+    }
+
+    public function descargarArchivoCorreo($id){
+
+        $bitacora_correo = Bitacora_Correo::where('id_bitacora_acta', $id)->first();
+
+        return Storage::download('actas/'.$bitacora_correo->archivo, $bitacora_correo->nombre_archivo);
+
+    }
+
+    public function registrarBitacoraActa($id_acta, $id_estado, $id_usuario = 1){
+
+        $bitacora_acta = new Bitacora_Acta();
+        $bitacora_acta->id_acta = $id_acta;
+        $bitacora_acta->id_estado = $id_estado;
+        $bitacora_acta->fecha = DB::raw('SYSDATE');
+        $bitacora_acta->id_usuario = 1;
+
+        $bitacora_acta->save();
+
+    }
+
+    // Perfil de Revisor de Actas
+
+    public function actasRevision(){
+
+        $data = [];
+
+        $actas = Acta::where('eliminada', null)->orderBy('id', 'desc')->get();
+
+        $actas_revision = [];
+
+        foreach ($actas as &$acta) {
+            
+            $bitacora = Bitacora_Acta::where('id_acta', $acta->id)->orderBy('id', 'desc')->first();
+
+            if ($bitacora->id_estado == 2) {
+               
+                $acta->bitacora = $bitacora;
+
+                $acta->bitacora->estado;
+
+                $acta->agenda->tipo_agenda;
+
+                $actas_revision [] = $acta;
+
+            }
+
+        }
+
+        $data["items"] = $actas_revision;
+        $data["fields"] = [
+            [
+                "label" => "No.",
+                "key" => "no_acta",
+                "sortable" => true
+            ],
+            [
+                "label" => "Año",
+                "key" => "year",
+                "sortable" => true
+            ],
+            [
+                "label" => "Agenda",
+                "key" => "agenda",
+                "sortable" => true
+            ],
+            [
+                "label" => "Estado",
+                "key" => "estado",
+                "sortable" => true
+            ],
+            [
+                "label" => "Acciones",
+                "key" => "actions",
+                "class" => "text-right"
+            ]
+        ];
+
+        return response()->json($data);
+
+    }
+
+    public function marcarRevisado(Request $request){
+
+        $this->registrarBitacora($request->id_punto, 4, '', '', '', $request->id_usuario);
+
+        return response()->json($request);
+
+    }
+
+    public function puntosAgendaRevisar($id){
+
+        $acta = Acta::find($id);
+        $acta->agenda->estado;
+        $puntos_agenda = $acta->agenda->puntos_agenda;
+
+        $puntos_agenda_acta = [];
+
+        foreach ($acta->agenda->puntos_agenda as &$punto_agenda) {
+            
+            $punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->first();
+
+            if ($punto_acta != null) {
+                
+                $punto_agenda->punto_acta = $punto_acta;
+
+                // Bitacora del punto del acta
+                $bitacora = Bitacora_Punto_Acta::where('id_punto', $punto_acta->id)->orderBy('id', 'desc')->first();
+
+                $punto_agenda->punto_acta->bitacora = $bitacora;
+
+                $puntos_agenda_acta [] = $punto_agenda;
+
+            }
+            
+        }
+
+        $acta->agenda->puntos_agenda_acta = $puntos_agenda_acta;
+        $acta->agenda->tipo_agenda;
+
+        return response()->json($acta);
+
+        // return response()->json($id);
+
+    }
+
+    public function aprobarActa(Request $request){
+
+        $this->registrarBitacoraActa($request->id_acta, 3, $request->id_usuario);
+
+        return response()->json($request);
 
     }
 

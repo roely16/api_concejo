@@ -10,4 +10,16 @@ class Punto_Acta extends Model
     protected $primary_key = 'id';
 
     public $timestamps = false;
+
+    public function acta(){
+
+        return $this->belongsTo('App\Acta', 'id_acta');
+
+    }
+
+    public function punto_agenda()
+    {
+        return $this->belongsTo('App\Punto_Agenda', 'id_punto_agenda');
+    }
+
 }
