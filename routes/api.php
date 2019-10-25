@@ -128,3 +128,14 @@ Route::get('/obtener_actas_revision', 'actaController@actasRevision');
 Route::post('/marcar_punto_revisado', 'actaController@marcarRevisado');
 Route::get('/puntos_agenda_acta_revisar/{id}', 'actaController@puntosAgendaRevisar');
 Route::post('/aprobar_acta', 'actaController@aprobarActa');
+
+// Hojas de la contraloria
+Route::post('/registro_lote', 'hojaController@registroLote');
+Route::get('/obtener_lotes', 'hojaController@obtenerLotes');
+
+// Impresión de Actas
+Route::get('/obtener_impresiones/{id}', 'impresionController@obtenerImpresiones');
+Route::get('/obtener_lotes_disponibles', 'impresionController@lotesDisponibles');
+Route::post('/registrar_archivo_impresion', 'impresionController@registrarArchivo');
+Route::get('/archivo_imprimir/{id}', 'impresionController@imprimirArchivo');
+Route::get('/paginas_impresion/{id}', 'impresionController@paginasImpresion');
