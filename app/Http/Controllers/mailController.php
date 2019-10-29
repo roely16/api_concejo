@@ -136,7 +136,7 @@ class mailController extends Controller
                 $envio_persona["archivo"] = $unique_id_file;
                 $envio_persona["enviado"] = 'S';
                 $envio_persona["fecha_envio"] = date('d/m/Y H:i:s');
-                $envio_persona["enviado_por"] = 1;
+                $envio_persona["enviado_por"] = $request->id_usuario;
 
                 $emails_enviados [] = $envio_persona;
 
@@ -157,7 +157,7 @@ class mailController extends Controller
             $bitacora_agenda->id_agenda = $id;
             $bitacora_agenda->id_estado = 2;
             $bitacora_agenda->fecha = DB::raw('SYSDATE');
-            $bitacora_agenda->id_usuario = 1;
+            $bitacora_agenda->id_usuario = $request->id_usuario;
             $bitacora_agenda->save();
 
             // Registrar en el historial de envio de correos

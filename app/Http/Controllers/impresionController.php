@@ -50,6 +50,8 @@ class impresionController extends Controller
 
     public function lotesDisponibles(){
 
+        $data = [];
+
         $lotes = Hoja_Contraloria::select('id', 'lote', 'inicia', 'finaliza', 'observacion', DB::raw("to_char(fecha, 'dd/mm/yyyy hh24:mi:ss') as fecha"), 'registrado_por')->get();
 
         foreach ($lotes as &$lote) {
@@ -59,7 +61,7 @@ class impresionController extends Controller
             $lote->ultimo_registro = $historial;
 
             if ($historial) {
-                
+
                 $lote->text = "Lote No. " . $lote->lote . ' - Restantes ' . ($lote->finaliza - $historial->pagina);
 
             }else{
@@ -68,11 +70,27 @@ class impresionController extends Controller
 
             }
 
-            $lote->value = $lote->id;            
+            $lote->value = $lote->id;   
+
+            if ($historial) {
+                
+                $hojas_disponibles = $lote->finaliza - $historial->pagina;
+
+                if ($hojas_disponibles > 0) {
+                    
+                    $data [] = $lote;
+
+                }
+
+            }else{
+
+                $data [] = $lote;
+
+            }
 
         }
 
-        return response()->json($lotes);
+        return response()->json($data);
 
     }
 
@@ -199,7 +217,9 @@ class impresionController extends Controller
 
     public function imprimirArchivo($id){
 
-        $impresion = Impresion::find($id);
+        $impresion = Impresion::find(22);
+
+        //return response()->json($impresion);
 
         return Storage::get('actas/'.$impresion->archivo);
 
@@ -209,7 +229,24 @@ class impresionController extends Controller
 
         $data = [];
 
-        $hojas_imprimir = Historial_Impresion::where('id_impresion', $id)->select('id', 'pagina', 'pagina_documento')->orderBy('id', 'asc')->get();
+        $hojas_imprimir = Historial_Impresion::where('id_impresion', $id)->select('id', 'pagina', 'pagina_documento', 'estado', 'comentario_error')->orderBy('id', 'asc')->get();
+
+        foreach ($hojas_imprimir as $hoja) {
+            
+            if ($hoja->estado == 1) {
+                $hoja->printStatus = "OK";
+            }elseif($hoja->estado == 2){
+                $hoja->printStatus = "Error";
+            }else{
+                $hoja->printStatus = "pending";
+            }
+
+        }
+
+        $impresion = Impresion::find($id);
+        $impresion->acta;
+
+        $data["impresion"] = $impresion;
 
         $data["items"] = $hojas_imprimir;
 
@@ -236,6 +273,34 @@ class impresionController extends Controller
         ];
 
         return response()->json($data);
+
+    }
+
+    public function registrarImpresion(Request $request){
+
+        $hojas = $request->hojas;
+        $id_impresion = $request->id_impresion;
+
+        foreach ($hojas as $hoja) {
+            
+            $registro_hoja = Historial_Impresion::find($hoja["id"]);
+            $registro_hoja->estado = $hoja["estado"];
+            $registro_hoja->fecha_impresion = DB::raw('SYSDATE');
+
+            if ($hoja["comentario_error"]) {
+                $registro_hoja->comentario_error = $hoja["comentario_error"];
+            }
+
+            $registro_hoja->save();
+
+        }
+
+        // Registrar que se imprimio el documento
+        $impresion = Impresion::find($id_impresion);
+        $impresion->fecha_impresion = DB::raw('SYSDATE');
+        $impresion->save();
+
+        return response()->json($hojas[0]);
 
     }
 }

@@ -139,3 +139,4 @@ Route::get('/obtener_lotes_disponibles', 'impresionController@lotesDisponibles')
 Route::post('/registrar_archivo_impresion', 'impresionController@registrarArchivo');
 Route::get('/archivo_imprimir/{id}', 'impresionController@imprimirArchivo');
 Route::get('/paginas_impresion/{id}', 'impresionController@paginasImpresion');
+Route::post('/registrar_impresion', 'impresionController@registrarImpresion');

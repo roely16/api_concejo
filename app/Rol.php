@@ -13,7 +13,7 @@ class Rol extends Model
 
     public function personas(){
 
-        return $this->hasMany('App\Persona');
+        return $this->hasMany('App\Persona', 'id_rol', 'id');
 
     }
 

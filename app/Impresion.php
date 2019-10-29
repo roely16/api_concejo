@@ -11,5 +11,11 @@ class Impresion extends Model
 
     public $timestamps = false;
 
-    
+    public function acta(){
+
+        return $this->belongsTo('App\Acta', 'id_acta');
+
+    }
+
+
 }

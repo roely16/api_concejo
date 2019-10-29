@@ -123,11 +123,17 @@ class personaController extends Controller
 
     public function personasCorreo(){
 
-        $personas = Persona::where('id_rol', '!=', null)->with('rol')->get();
+        // Buscar el rol de revisor de agendas
+        // $rol = Rol::where('key', 'revisor_agendas')->first();
+
+        // $personas = $rol->personas;
+
+        $personas = Persona::where('id_rol', '=', 61)->with('rol')->get();
 
         foreach ($personas as $persona) {
         
             $persona->enviar_correo = true;
+            // $persona->rol;
 
         }
 

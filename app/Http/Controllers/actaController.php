@@ -94,7 +94,7 @@ class actaController extends Controller
                 return response()->json('Error al registrar');
             }
 
-            $this->registrarBitacoraActa($acta->id, 1, 1);
+            $this->registrarBitacoraActa($acta->id, 1, $request->id_usuario);
 
         } catch (\Exception $e) {
             
@@ -470,7 +470,7 @@ class actaController extends Controller
         $bitacora_acta->id_acta = $request->id_acta;
         $bitacora_acta->id_estado = 2;
         $bitacora_acta->fecha = DB::raw('SYSDATE');
-        $bitacora_acta->id_usuario = 1;
+        $bitacora_acta->id_usuario = $request->id_usuario;
         $bitacora_acta->save();
 
         // Registrar en la bitacora del correo
@@ -481,7 +481,7 @@ class actaController extends Controller
             $bitacora_correo->archivo = $response_file->unique_id_file;
             $bitacora_correo->enviado = 'S';
             $bitacora_correo->fecha_envio = DB::raw('SYSDATE');
-            $bitacora_correo->enviado_por = 1;
+            $bitacora_correo->enviado_por = $request->id_usuario;
             $bitacora_correo->nombre_archivo = $response_file->file_name;
             $bitacora_correo->id_bitacora_acta = $bitacora_acta->id;
             $bitacora_correo->save();
@@ -655,7 +655,7 @@ class actaController extends Controller
         $bitacora_acta->id_acta = $id_acta;
         $bitacora_acta->id_estado = $id_estado;
         $bitacora_acta->fecha = DB::raw('SYSDATE');
-        $bitacora_acta->id_usuario = 1;
+        $bitacora_acta->id_usuario = $id_usuario;
 
         $bitacora_acta->save();
 

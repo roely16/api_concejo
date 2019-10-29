@@ -77,6 +77,16 @@ class documentoController extends Controller
                 "sortable" => true
             ],
             [
+                "label" => "Fecha",
+                "key" => "fecha_creacion",
+                "sortable" => true
+            ],
+            [
+                "label" => "Subido Por",
+                "key" => "persona",
+                "sortable" => true
+            ],
+            [
                 "label" => "Acciones",
                 "key" => "actions",
                 "class" => "text-right"

@@ -272,6 +272,11 @@ class AgendaController extends Controller
         $data["items"] = $agendas;
         $data["fields"] = [
             [
+                "label" => "ID",
+                "key" => "id",
+                "sortable" => true
+            ],
+            [
                 "label" => "Fecha",
                 "key" => "fecha",
                 "sortable" => true
@@ -351,13 +356,13 @@ class AgendaController extends Controller
 
     }
 
-    public function registrarBitacora($id_agenda, $id_estado, $id_usuario){
+    public function registrarBitacora($id_agenda, $id_estado, $id_usuario = 1){
 
         $bitacora_agenda = new Bitacora_Agenda();
         $bitacora_agenda->id_agenda = $id_agenda;
         $bitacora_agenda->id_estado = $id_estado;
         $bitacora_agenda->fecha = DB::raw('SYSDATE');
-        $bitacora_agenda->id_usuario = 1;
+        $bitacora_agenda->id_usuario = $id_usuario;
 
         $bitacora_agenda->save();
 
@@ -595,6 +600,7 @@ class AgendaController extends Controller
 
         $personas = $request->personas;
         $id_agenda = $request->id_agenda;
+        $id_usuario = $request->id_usuario;
 
         // Construcción del archivo a enviar
         $puntos = Agenda::find($id_agenda)->puntos_agenda;
@@ -651,7 +657,7 @@ class AgendaController extends Controller
         $bitacora_agenda->id_agenda = $id_agenda;
         $bitacora_agenda->id_estado = 4;
         $bitacora_agenda->fecha = DB::raw('SYSDATE');
-        $bitacora_agenda->id_usuario = 1;
+        $bitacora_agenda->id_usuario = $id_usuario;
         $bitacora_agenda->save();
 
         // Escribir en la bitacora de correos
@@ -665,7 +671,7 @@ class AgendaController extends Controller
             $bitacora_correo->archivo = $unique_id_file;
             $bitacora_correo->enviado = 'S';
             $bitacora_correo->fecha_envio = DB::raw('SYSDATE');
-            $bitacora_correo->enviado_por = 1;
+            $bitacora_correo->enviado_por = $id_usuario;
             $bitacora_correo->nombre_archivo = $file_name;
             $bitacora_correo->save();
 
