@@ -45,6 +45,9 @@ Route::post('/finalizar_agenda', 'agendaController@finalizarAgenda');
 Route::get('/obtener_agendas_analisis', 'agendaController@agendasEnAnalisis');
 Route::post('/aprobar_agenda', 'agendaController@aprobarAgenda');
 
+// Agendas para Asistente a Sesión
+Route::get('/obtener_agendas_sesion', 'agendaController@agendasSesion');
+
 // Actas
 Route::get('/datos_modal_acta', 'actaController@datosModalCreacion');
 Route::post('/registrar_acta', 'actaController@registrarActa');
@@ -57,6 +60,7 @@ Route::get('/vista_previa_acta/{id}', 'actaController@vistaPreviaActa');
 Route::post('/enviar_acta_revision', 'actaController@enviarRevision');
 Route::get('/historial_acta/{id}', 'actaController@historialActa');
 Route::get('/descargar_archivo_correo_acta/{id}', 'actaController@descargarArchivoCorreo');
+Route::get('/detalle_acta_agenda/{id}', 'actaController@detalleActaAgenda');
 
 // Mail
 Route::get('/pdf_acta/{id_acta}', 'mailController@pdfActa');
@@ -91,6 +95,7 @@ Route::post('/registrar_asistencia', 'asistenciaController@registrarAsistencia')
 Route::post('/eliminar_asistencia', 'asistenciaController@eliminarAsistencia');
 Route::post('/registrar_asistencia_especial', 'asistenciaController@registrarAsistenciaEspecial');
 Route::post('/congelar_asistencia', 'asistenciaController@congelarAsistencia');
+Route::post('/detalle_asistencia', 'asistenciaController@detalleAsistencia');
 
 // Puntos de Acta
 Route::post('/registro_punto_acta', 'actaController@registroPuntoActa');

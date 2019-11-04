@@ -189,6 +189,21 @@ class actaController extends Controller
 
     }
 
+    public function detalleActaAgenda($id){
+
+        $acta = Acta::find($id);
+        $acta->agenda->tipo_agenda;
+
+        // Bitacora del Acta
+        $bitacora = Bitacora_Acta::where('id_acta', $acta->id)->orderBy('id', 'desc')->first();
+        $bitacora->estado;
+
+        $acta->ultimo_estado = $bitacora;
+
+        return response()->json($acta);
+
+    }
+
     public function editarActa(Request $request){
 
         try {
@@ -236,7 +251,27 @@ class actaController extends Controller
 
         foreach ($acta->agenda->puntos_agenda as &$punto_agenda) {
             
-            $punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->first();
+            $punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->where('eliminado', null)->first();
+
+            if ($punto_acta) {
+                
+                // Obtener la bitacora del punto de acta
+                $bitacora_punto = Bitacora_Punto_Acta::where('id_punto', $punto_acta->id)->orderBy('id', 'desc')->first();
+
+                // Si la acción es 4 marcar de color verde
+                if ($bitacora_punto->id_accion == 4) {
+                    
+                    $punto_acta->color = 'success';
+
+                }else{
+
+                    $punto_acta->color = "primary";
+
+                }
+
+                
+
+            }
 
             $punto_agenda->punto_acta = $punto_acta;
 
@@ -262,10 +297,19 @@ class actaController extends Controller
         // Punto de acta
         $punto_acta = Punto_Acta::where('id_punto_agenda', $id_punto_agenda)->where('eliminado', null)->first();
 
+        if ($punto_acta) {
+            //Bitácora del punto de acta
+            $punto_acta->bitacora = Bitacora_Punto_Acta::where('id_punto', $punto_acta->id)->orderBy('id', 'desc')->first();
+        }
+        
+        // Puntos Eliminados
+        $puntos_eliminados = Punto_Acta::where('id_punto_agenda', $id_punto_agenda)->where('eliminado', 'S')->orderBy('id', 'desc')->get();
+
         // Datos de la agenda
 
         $data["punto_agenda"] = $punto_agenda;
         $data["punto_acta"] = $punto_acta;
+        $data["puntos_eliminados"] = $puntos_eliminados;
 
         return response()->json($data);
 
@@ -279,7 +323,7 @@ class actaController extends Controller
         $punto_acta->descripcion = $request->descripcion;
         $punto_acta->save();
 
-        $this->registrarBitacora($punto_acta->id, 1, '', '', '', 1);
+        $this->registrarBitacora($punto_acta->id, 1, '', '', '', $request->id_usuario);
 
         return response()->json($punto_acta);
 
@@ -314,10 +358,11 @@ class actaController extends Controller
 
     public function bitacoraPunto($id){
 
-        $bitacora_punto = Bitacora_Punto_Acta::where('id_punto', $id)->with('accion')->with('persona')->orderBy('id')->get();
+        $bitacora_punto = Bitacora_Punto_Acta::where('id_punto', $id)->with('accion')->orderBy('id')->get();
 
         foreach ($bitacora_punto as &$item) {
             
+            $item->persona->usuario;
             $item->_showDetails = false;
         }
 
@@ -357,7 +402,7 @@ class actaController extends Controller
         $punto_acta->eliminado = 'S';
         $punto_acta->save();
 
-        $this->registrarBitacora($punto_acta->id, 3, $request->descripcion, '', $request->motivo_eliminacion, 1);
+        $this->registrarBitacora($punto_acta->id, 3, $request->descripcion, '', $request->motivo_eliminacion, $request->id_usuario);
 
         return response()->json($punto_acta);
 
@@ -387,7 +432,7 @@ class actaController extends Controller
 
         foreach ($puntos_agenda as &$punto_agenda) {
 
-            $punto_agenda->punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->first();
+            $punto_agenda->punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->where('eliminado', null)->first();
 
             $cantidad_digitos = strlen((string)$punto_agenda->orden);
 
@@ -740,7 +785,7 @@ class actaController extends Controller
 
         foreach ($acta->agenda->puntos_agenda as &$punto_agenda) {
             
-            $punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->first();
+            $punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->where('eliminado', null)->first();
 
             if ($punto_acta != null) {
                 

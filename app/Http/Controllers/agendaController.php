@@ -681,4 +681,58 @@ class AgendaController extends Controller
 
     }
 
+    // Asistente a la sesión
+    public function agendasSesion(){
+
+        $data = [];
+
+        $agendas = Agenda::where('eliminada', null)->orderBy('id', 'desc')->get();
+
+        $agendas_sesion = [];
+
+        foreach ($agendas as $agenda) {
+        
+            $bitacora_agenda = Bitacora_Agenda::where('id_agenda', $agenda->id)->orderBy('id', 'desc')->first();
+
+            if ($bitacora_agenda->id_estado == 4) {
+                
+                $agenda->bitacora = $bitacora_agenda;
+
+                $agenda->bitacora->estado;
+
+                $agendas_sesion [] = $agenda;
+
+            }
+
+        }
+
+        $data["items"] = $agendas_sesion;
+
+        $data["fields"] = [
+            [
+                "label" => "Fecha",
+                "key" => "fecha",
+                "sortable" => true
+            ],
+            [
+                "label" => "Tipo",
+                "key" => "id_tipo",
+                "sortable" => true
+            ],
+            [
+                "label" => "Estado",
+                "key" => "estado",
+                "sortable" => true
+            ],
+            [
+                "label" => "Acciones",
+                "key" => "actions",
+                "class" => "text-right"
+            ]
+        ];
+
+        return response()->json($data);
+
+    }
+
 }
