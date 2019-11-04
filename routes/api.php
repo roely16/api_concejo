@@ -145,3 +145,11 @@ Route::post('/registrar_archivo_impresion', 'impresionController@registrarArchiv
 Route::get('/archivo_imprimir/{id}', 'impresionController@imprimirArchivo');
 Route::get('/paginas_impresion/{id}', 'impresionController@paginasImpresion');
 Route::post('/registrar_impresion', 'impresionController@registrarImpresion');
+
+// Puntos de Agenda en la sesión
+Route::get('/puntos_agenda_sesion/{id}', 'puntoAgendaSesionController@obtenerPuntos');
+Route::post('/copiar_puntos', 'puntoAgendaSesionController@copiarPuntos');
+Route::get('/bitacora_punto_agenda_sesion/{id}', 'puntoAgendaSesionController@obtenerBitacora');
+Route::post('/editar_punto_agenda_sesion', 'puntoAgendaSesionController@editarPunto');
+Route::post('/reordenar_puntos_sesion', 'puntoAgendaSesionController@reordenarPuntos');
+Route::post('/eliminar_punto_sesion', 'puntoAgendaSesionController@eliminarPunto');
