@@ -164,9 +164,11 @@ class AgendaController extends Controller
         $month = $array_fecha[1];
         $year = $array_fecha[2];
 
-        $f = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);
+        $format_number = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);
 
-        $string_fecha = strtoupper(strftime('%A', strtotime($year.'/'.$month.'/'.$day)) . ' ' . intval($day) . ' DE ' . strftime('%B', strtotime($year.'/'.$month.'/'.$day)) . ' DEL AÑO ' . $f->format($year));
+        $string_fecha = strftime('%A', strtotime($year.'/'.$month.'/'.$day)) . ' ' . $format_number->format(intval($day)) . ' DE ' . strftime('%B', strtotime($year.'/'.$month.'/'.$day)) . ' DEL AÑO ' . $format_number->format($year);
+
+        // $string_fecha = mb_strtoupper($string_fecha);
 
         $data = [
             "acta" => $acta,
@@ -184,7 +186,7 @@ class AgendaController extends Controller
             'tipo_agenda' =>  strtoupper($tipo)
         ];
 
-        $pdf = PDF::loadView('myPDF', $data);
+        $pdf = PDF::loadView('pdf.agenda', $data);
         $pdf->setPaper('legal', 'portrait');
 
         // return response()->json('mail');

@@ -193,10 +193,11 @@ class puntoAgendaController extends Controller
 
     public function bitacoraPunto($id){
 
-        $bitacora_punto = Bitacora_Punto::where('id_punto', $id)->with('accion')->with('persona')->orderBy('id')->get();
+        $bitacora_punto = Bitacora_Punto::where('id_punto', $id)->with('accion')->orderBy('id')->get();
 
         foreach ($bitacora_punto as &$item) {
             
+            $item->persona->usuario;
             $item->_showDetails = false;
         }
 

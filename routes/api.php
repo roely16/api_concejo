@@ -96,6 +96,7 @@ Route::post('/eliminar_asistencia', 'asistenciaController@eliminarAsistencia');
 Route::post('/registrar_asistencia_especial', 'asistenciaController@registrarAsistenciaEspecial');
 Route::post('/congelar_asistencia', 'asistenciaController@congelarAsistencia');
 Route::post('/detalle_asistencia', 'asistenciaController@detalleAsistencia');
+Route::get('/eliminar_registro_asistencia/{id}', 'asistenciaController@eliminarRegistro');
 
 // Puntos de Acta
 Route::post('/registro_punto_acta', 'actaController@registroPuntoActa');

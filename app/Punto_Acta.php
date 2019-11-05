@@ -19,7 +19,7 @@ class Punto_Acta extends Model
 
     public function punto_agenda()
     {
-        return $this->belongsTo('App\Punto_Agenda', 'id_punto_agenda');
+        return $this->belongsTo('App\Punto_Agenda_Sesion', 'id_punto_agenda');
     }
 
 }

@@ -11,6 +11,7 @@ use App\Agenda;
 use App\Persona;
 use App\Punto_Acta;
 use App\Impresion;
+use App\Punto_Agenda_Sesion;
 
 use DB;
 use PDF;
@@ -100,7 +101,7 @@ class impresionController extends Controller
         $acta->puntos_acta;
         $acta->agenda->tipo_agenda;
 
-        $acta->agenda->puntos_agenda = Agenda::find($acta->agenda->id)->puntos_agenda()->where('eliminado', null)->get();
+        $acta->agenda->puntos_agenda = Punto_Agenda_Sesion::where('id_agenda', $acta->agenda->id)->where('eliminado', null)->orderBy('orden', 'asc')->get();
 
         // Asistencia
         $personas = Persona::has('puesto')->orderBy('id_puesto')->with('puesto')->get();
@@ -217,7 +218,7 @@ class impresionController extends Controller
 
     public function imprimirArchivo($id){
 
-        $impresion = Impresion::find(22);
+        $impresion = Impresion::find($id);
 
         //return response()->json($impresion);
 

@@ -15,6 +15,7 @@ use App\Bitacora_Agenda;
 use App\Persona;
 use App\Bitacora_Acta;
 use App\Bitacora_Correo;
+use App\Punto_Agenda_Sesion;
 
 use App\Mail\ActaRevision;
 
@@ -247,7 +248,11 @@ class actaController extends Controller
 
         $acta = Acta::find($id);
         $acta->agenda->estado;
-        $puntos_agenda = $acta->agenda->puntos_agenda;
+
+        // Puntos de la Agenda
+        $acta->agenda->puntos_agenda = Punto_Agenda_Sesion::where('id_agenda', $acta->agenda->id)->where('eliminado', null)->orderBy('orden', 'asc')->get();
+
+        // $puntos_agenda = $acta->agenda->puntos_agenda;
 
         foreach ($acta->agenda->puntos_agenda as &$punto_agenda) {
             
@@ -291,7 +296,7 @@ class actaController extends Controller
         $data = [];
 
         // Punto de la agenda
-        $punto_agenda = Punto_Agenda::find($id_punto_agenda);
+        $punto_agenda = Punto_Agenda_Sesion::find($id_punto_agenda);
         $punto_agenda->agenda->tipo_agenda;
 
         // Punto de acta
@@ -414,7 +419,7 @@ class actaController extends Controller
         $acta->puntos_acta;
         $acta->agenda->tipo_agenda;
 
-        $acta->agenda->puntos_agenda = Agenda::find($acta->agenda->id)->puntos_agenda()->where('eliminado', null)->get();
+        $acta->agenda->puntos_agenda =  Punto_Agenda_Sesion::where('id_agenda', $acta->agenda->id)->where('eliminado', null)->orderBy('orden', 'asc')->get();
 
         // Asistencia
         $personas = Persona::has('puesto')->orderBy('id_puesto')->with('puesto')->get();
@@ -543,7 +548,7 @@ class actaController extends Controller
         $acta->puntos_acta;
         $acta->agenda->tipo_agenda;
 
-        $acta->agenda->puntos_agenda = Agenda::find($acta->agenda->id)->puntos_agenda()->where('eliminado', null)->get();
+        $acta->agenda->puntos_agenda = Punto_Agenda_Sesion::where('id_agenda', $acta->agenda->id)->where('eliminado', null)->orderBy('orden', 'asc')->get();
 
         // Asistencia
         $personas = Persona::has('puesto')->orderBy('id_puesto')->with('puesto')->get();
@@ -779,7 +784,7 @@ class actaController extends Controller
 
         $acta = Acta::find($id);
         $acta->agenda->estado;
-        $puntos_agenda = $acta->agenda->puntos_agenda;
+        $acta->agenda->puntos_agenda = Punto_Agenda_Sesion::where('id_agenda', $acta->agenda->id)->where('eliminado', null)->orderBy('orden', 'asc')->get();
 
         $puntos_agenda_acta = [];
 

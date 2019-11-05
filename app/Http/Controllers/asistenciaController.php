@@ -196,4 +196,13 @@ class asistenciaController extends Controller
 
     }
 
+    public function eliminarRegistro($id){
+
+        $asistencia = Asistencia::find($id);
+        $asistencia->delete();
+
+        return response()->json($asistencia);
+
+    }
+
 }

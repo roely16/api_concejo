@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Agenda</title>
     
 </head>
@@ -33,7 +33,7 @@
     </style>
 	
     <div class="titulo">
-        <strong>SESIÓN {{ $tipo_agenda }} DEL CONCEJO DEL MUNICIPIO DE GUATEMALA, PARA CELEBRAR EL DÍA {{ $string_fecha }}</strong>        
+        <strong>SESIÓN {{ $tipo_agenda }} DEL CONCEJO DEL MUNICIPIO DE GUATEMALA, PARA CELEBRAR EL DÍA {{ Str::upper($string_fecha) }}</strong>        
     </div>
 
     <br><br>
