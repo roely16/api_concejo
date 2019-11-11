@@ -10,4 +10,10 @@ class Historial_Impresion extends Model
     protected $primary_key = 'id';
 
     public $timestamps = false;
+
+    public function impresion(){
+
+        return $this->belongsTo('App\Impresion', 'id_impresion');
+
+    }
 }

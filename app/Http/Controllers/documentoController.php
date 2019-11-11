@@ -14,7 +14,7 @@ class documentoController extends Controller
     public function registrarDocumento(Request $request){
 
         $path = $request->file('file')->store('documentos');
-        $tipo = $request->tipo;
+        $tipo = $request->id_tipo;
         $autor = $request->autor;
 
         if ($request->descripcion === null) {
@@ -30,7 +30,7 @@ class documentoController extends Controller
         }   
 
         $documento = new Documento();
-        $documento->id_tipo = 1;
+        $documento->id_tipo = $tipo;
         $documento->archivo = $path;
         $documento->nombre = $request->file->getClientOriginalName();
         $documento->autor = $autor;
@@ -50,7 +50,7 @@ class documentoController extends Controller
 
         $data = [];
 
-        $documentos = Documento::where('id_agenda', $id)->with('tipo_documento')->get();
+        $documentos = Documento::where('id_agenda', $id)->with('tipo_documento')->orderBy('id', 'desc')->get();
 
         foreach ($documentos as &$documento) {
             

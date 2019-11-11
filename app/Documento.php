@@ -11,9 +11,9 @@ class Documento extends Model
 
     public $timestamps = false;
 
-    protected $casts = [
-        'fecha_creacion' => 'datetime:d/m/Y H:i:s',
-    ];
+    // protected $casts = [
+    //     'fecha_creacion' => 'datetime:d/m/Y H:i:s',
+    // ];
 
     public function tipo_documento()
     {

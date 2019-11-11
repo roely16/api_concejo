@@ -36,10 +36,13 @@ Route::get('/detalle_agenda/{id}', 'agendaController@detalleAgenda');
 Route::post('/editar_agenda', 'agendaController@editarAgenda');
 Route::post('/eliminar_agenda', 'agendaController@eliminarAgenda');
 Route::get('/bitacora_agenda/{id}', 'agendaController@bitacoraCambios');
-Route::get('/obtener_concejo', 'agendaController@obtenerConcejo');
+Route::get('/obtener_concejo/{id}', 'agendaController@obtenerConcejo');
 Route::post('/enviar_agenda_concejo', 'agendaController@enviarAgendaConcejo');
 Route::get('/descargar_archivo_correo_agenda/{id}', 'agendaController@descargarArchivoCorreo');
 Route::post('/finalizar_agenda', 'agendaController@finalizarAgenda');
+Route::get('/unir_pdf/{id}', 'agendaController@unirPDF');
+Route::get('/vista_previa_documento_agenda/{id}', 'agendaController@vistaPreviaDocumento');
+Route::post('/vista_previa_adjunto','agendaController@vistaPreviaAdjunto');
 
 // Agendas para Revisor
 Route::get('/obtener_agendas_analisis', 'agendaController@agendasEnAnalisis');
@@ -138,6 +141,9 @@ Route::post('/aprobar_acta', 'actaController@aprobarActa');
 // Hojas de la contraloria
 Route::post('/registro_lote', 'hojaController@registroLote');
 Route::get('/obtener_lotes', 'hojaController@obtenerLotes');
+Route::get('/detalle_lote/{id}', 'hojaController@detalleLote');
+Route::get('/hojas_usadas_lote/{id}', 'hojaController@hojasUsadasLote');
+Route::get('/vista_previa_documento/{id}', 'hojaController@vistaPrevia');
 
 // Impresión de Actas
 Route::get('/obtener_impresiones/{id}', 'impresionController@obtenerImpresiones');

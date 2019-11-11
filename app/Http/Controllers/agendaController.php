@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use LynX39\LaraPdfMerger\Facades\PdfMerger;
+
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
 use Storage;
+use Response;
 
 use App\Agenda;
 // use App\Acta;
@@ -15,6 +18,7 @@ use App\Bitacora_Agenda;
 use App\Bitacora_Correo;
 use App\Estado_Agenda;
 use App\Persona;
+use App\Documento;
 
 // Envio de correos
 use App\Mail\AprobacionAgenda;
@@ -450,6 +454,100 @@ class AgendaController extends Controller
 
     }
 
+    public function vistaPreviaDocumento($id){
+
+        $documento = Documento::find($id);
+
+        $pdf_file = Storage::get($documento->archivo, $documento->nombre);
+        $type = Storage::mimeType($documento->archivo);
+
+
+        return Response::make($pdf_file, 200, [
+            'Content-Type'        => $type,
+            'Content-Disposition' => 'inline; filename="'.$documento->nombre.'"'
+        ]);
+
+        // return response()->file(storage_path('app/'. $documento->archivo));
+
+        // return response()->json($documento);
+
+    }
+
+    public function vistaPreviaAdjunto(Request $request){
+
+        $id = $request->id_agenda;
+
+        $puntos = Agenda::find($id)->puntos_agenda()->where('eliminado', null)->get();
+        $acta = Agenda::find($id);
+
+        $number_formatter = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);
+        $no_acta_letras = strtoupper($number_formatter->format($acta->numero_acta));
+
+        // Fecha de la agenda
+        setlocale(LC_ALL, 'es_ES');
+
+        $agenda = Agenda::find($id);
+        $array_fecha = preg_split("#/#", $agenda->fecha);
+        $day = $array_fecha[0];
+        $month = $array_fecha[1]; 
+        $year = $array_fecha[2];
+
+        $format_number = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);
+
+        $string_fecha = strftime('%A', strtotime($year.'/'.$month.'/'.$day)) . ' ' . $format_number->format(intval($day)) . ' DE ' . strftime('%B', strtotime($year.'/'.$month.'/'.$day)) . ' DEL AÑO ' . $format_number->format($year);
+
+        // $string_fecha = mb_strtoupper($string_fecha);
+
+        $data = [
+            "acta" => $acta,
+            "puntos" => $puntos
+        ];
+
+        $tipo = $agenda->tipo_agenda->nombre;
+
+        $data = [
+            'title' => 'Welcome to HDTuto.com',
+            'acta' => $acta,
+            'puntos_agenda' => $puntos,
+            'no_acta_letras' => $no_acta_letras,
+            'string_fecha' => $string_fecha,
+            'tipo_agenda' =>  strtoupper($tipo)
+        ];
+
+        $pdf = PDF::loadView('pdf.agenda', $data);
+        $pdf->setPaper('legal', 'portrait');
+
+        $pdf->save(storage_path("app/temp/temp_agenda.pdf"));
+
+        $pdfMerger = PDFMerger::init();
+
+        $pdfMerger->addPDF(storage_path('app/temp/temp_agenda.pdf'), 'all');
+
+        // Documentos
+        $documentos = $request->documentos;        
+
+        foreach ($documentos as $documento) {
+            
+            $pdfMerger->addPDF(storage_path('app/'. $documento["archivo"]), 'all');
+
+        }
+
+        $pdfMerger->merge();
+
+        $pdfMerger->save(storage_path("app/temp/temp_pdf.pdf"), "file");
+
+        $pdf_file = Storage::get('temp/temp_pdf.pdf', 'temp_pdf.pdf');
+        $type = Storage::mimeType('temp/temp_pdf.pdf');
+
+        return Response::make($pdf_file, 200, [
+            'Content-Type'        => $type,
+            'Content-Disposition' => 'inline;'
+        ]);
+        
+        // return response()->json($request);
+
+    }
+
     // Revisor de Agendas
     public function agendasEnAnalisis(){
 
@@ -560,12 +658,18 @@ class AgendaController extends Controller
 
     // Envio de la agenda al concejo
 
-    public function obtenerConcejo(){
+    public function obtenerConcejo($id){
+
+        $documentos = Documento::where('id_agenda', $id)->where('nombre', 'like', '%.pdf')->get();
 
         $concejo = Persona::where('enviar_agenda', 'S')->with('puesto')->orderBy('id', 'asc')->get();
 
         foreach ($concejo as &$item) {
             $item->enviar = true;
+        }
+
+        foreach ($documentos as &$documento) {
+            $documento->marcado = false;
         }
 
         $data = [];
@@ -594,6 +698,11 @@ class AgendaController extends Controller
             ]
         ];
 
+        // Obtener los documentos PDF para formar el archivo adjunto
+        // $documentos = Documento::where('id_agenda', $id)->where('nombre', 'like', '%.pdf')->get();
+
+        $data["documentos"] = $documentos;
+
         return response()->json($data);
 
     }
@@ -603,6 +712,7 @@ class AgendaController extends Controller
         $personas = $request->personas;
         $id_agenda = $request->id_agenda;
         $id_usuario = $request->id_usuario;
+        $documentos = $request->documentos;
 
         // Construcción del archivo a enviar
         $puntos = Agenda::find($id_agenda)->puntos_agenda;
@@ -639,6 +749,27 @@ class AgendaController extends Controller
         $unique_id_file = time();
         Storage::put('agendas/'.$unique_id_file, $content);
         $file_name = "Agenda.pdf";
+
+        // PDF Merger
+        $pdfMerger = PDFMerger::init();
+
+        $pdfMerger->addPDF(storage_path('app/agendas/'.$unique_id_file), 'all');
+
+        // Documentos
+        if (count($documentos) > 0) {
+           
+            foreach ($documentos as $documento) {
+            
+                $pdfMerger->addPDF(storage_path('app/'. $documento["archivo"]), 'all');
+    
+            }
+            
+        }
+        
+
+        $pdfMerger->merge();
+
+        $pdfMerger->save(storage_path('app/agendas/'.$unique_id_file), "file");
 
         $correo_agenda = new \stdClass();
         $correo_agenda->nombre_archivo =  $unique_id_file;
@@ -736,5 +867,26 @@ class AgendaController extends Controller
         return response()->json($data);
 
     }
+
+    // Prueba de uníon de archivos
+    public function unirPDF($id){
+
+        $pdfMerger = PDFMerger::init();
+
+        $documentos = Documento::where('id_agenda', $id)->where('nombre', 'like', '%.pdf')->get();
+
+        foreach($documentos as $documento){
+
+            $pdfMerger->addPDF(storage_path('app/'. $documento->archivo), 'all');
+
+        }
+
+        $pdfMerger->merge();
+
+        $pdfMerger->save("file_name.pdf", "browser");
+
+    }
+
+
 
 }
