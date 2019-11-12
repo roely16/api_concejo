@@ -32,7 +32,7 @@ class AgendaConcejo extends Mailable
     {   
         $location = storage_path("app/agendas/" . $this->data->nombre_archivo);
 
-        return $this->view('mails.agenda_concejo')->attach($location, [
+        return $this->view('mails.agenda_concejo')->subject('Agenda de Sesión '. $this->data->agenda->tipo_agenda->nombre . ' ' . $this->data->agenda->fecha)->attach($location, [
             'as' => $this->data->etiqueta_archivo,
             'mime' => 'application/pdf',
         ]);

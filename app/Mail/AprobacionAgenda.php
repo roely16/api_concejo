@@ -30,6 +30,6 @@ class AprobacionAgenda extends Mailable
      */
     public function build()
     {
-        return $this->view('mails.aprobacion_agenda');
+        return $this->view('mails.aprobacion_agenda')->subject('Agenda Aprobada ' . $this->data->fecha);
     }
 }

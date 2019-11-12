@@ -14,7 +14,7 @@ class Punto_Agenda extends Model
 
     public function agenda()
     {
-        return $this->belongsTo('App\Agenda', 'id_acta')->select('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'asistencia_congelada', 'descripcion', 'eliminada');
+        return $this->belongsTo('App\Agenda', 'id_agenda')->select('id', 'id_tipo', DB::raw("to_char(fecha, 'dd/mm/yyyy') as fecha"), 'asistencia_congelada', 'descripcion', 'eliminada');
     }
 
     public function bitacora(){

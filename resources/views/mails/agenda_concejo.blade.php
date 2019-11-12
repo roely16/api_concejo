@@ -8,7 +8,16 @@
 </head>
 <body>
     
-    <h1>Sistema de Control de Actas</h1>
+    <!-- <h1>Sistema de Control de Actas</h1> -->
+
+    <p>{{ $data->persona->titulo_acta }} {{ $data->persona->nombre }} {{ $data->persona->apellido }}</p>
+
+    <p>Por este medio se hace de su conocimiento la agenda ha tratar en la Sesión {{ $data->agenda->tipo_agenda->nombre }} del Concejo Municipal con fecha {{ $data->agenda->fecha }}.</p>
+
+    <p>Saludos cordinales.</p>
+
+    <br>
+    <img src="https://greendevelopment.com.gt/wp-content/uploads/2016/02/logo-muni-guate.png" alt="">
 
 </body>
 </html>

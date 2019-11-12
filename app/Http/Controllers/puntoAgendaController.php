@@ -46,7 +46,7 @@ class puntoAgendaController extends Controller
             
             $punto_agenda = new Punto_Agenda();
             $punto_agenda->descripcion = $request->descripcion;
-            $punto_agenda->id_acta = $request->id_acta;
+            $punto_agenda->id_agenda = $request->id_acta;
             $punto_agenda->orden  = $request->orden;
 
             $punto_agenda->save();

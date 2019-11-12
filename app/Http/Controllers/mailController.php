@@ -120,6 +120,7 @@ class mailController extends Controller
             $objDemo = new \stdClass();
             $objDemo->nombre_archivo =  $unique_id_file;
             $objDemo->etiqueta_archivo = $file_name;
+            $objDemo->agenda = $agenda;
 
             $resultados_envio = [];
 

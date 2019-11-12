@@ -11,5 +11,8 @@
     <h1>Sistema de Control de Actas</h1>
     <h3>La Agenda de Fecha {{ $data->fecha }} ha sido aprobada por {{ $data->responsable_aprobacion }}.</h3>
 
+    <br>
+    <img src="https://greendevelopment.com.gt/wp-content/uploads/2016/02/logo-muni-guate.png" alt="">
+
 </body>
 </html>

@@ -29,7 +29,7 @@ class Bitacora_Agenda extends Model
 
     public function historial_correos(){
 
-        return $this->hasMany('App\Bitacora_Correo', 'id_bitacora', 'id')->orderBy('id_persona');
+        return $this->hasMany('App\Bitacora_Correo', 'id_bitacora', 'id')->orderBy('id_concejo');
 
     }
 }

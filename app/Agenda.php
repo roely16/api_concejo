@@ -19,7 +19,7 @@ class Agenda extends Model
 
     public function puntos_agenda()
     {
-        return $this->hasMany('App\Punto_Agenda', 'id_acta')->orderBy('orden');
+        return $this->hasMany('App\Punto_Agenda', 'id_agenda')->orderBy('orden');
     }
 
     public function tipo_agenda(){

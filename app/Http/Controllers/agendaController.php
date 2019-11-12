@@ -19,6 +19,7 @@ use App\Bitacora_Correo;
 use App\Estado_Agenda;
 use App\Persona;
 use App\Documento;
+use App\Concejo;
 
 // Envio de correos
 use App\Mail\AprobacionAgenda;
@@ -256,23 +257,17 @@ class AgendaController extends Controller
 
         $agendas = Agenda::where('eliminada', null)->orderBy('id', 'desc')->get();
 
-        // foreach ($agendas as &$agenda) {
-        //     $agenda->whereHas('bitacora_agenda', function($query){
-        //         $query->where('id_estado', 1);
-        //     })->get();
-        // }
-
         foreach ($agendas as &$agenda) {
             
             $bitacora = Bitacora_Agenda::where('id_agenda', $agenda->id)->orderBy('id', 'desc')->first();
 
             $agenda->bitacora = $bitacora;
 
-            $agenda->bitacora->estado;
-
-            // $estado_agenda = Estado_Agenda::whre('id_estado', $bitacora->id_estado)->get();
+            if ($agenda->bitacora) {
+                $agenda->bitacora->estado;
+            }
             
-            // $bitacora->estado;
+            
         }
 
         $data["items"] = $agendas;
@@ -377,8 +372,6 @@ class AgendaController extends Controller
     public function bitacoraCambios($id){
 
         $data = [];
-
-        // $bitacora_agenda = Bitacora_Agenda::where('id_agenda', $id)->get('id', 'id_agenda', 'id_estado',);
 
         $agenda = Agenda::find($id);
         
@@ -662,7 +655,7 @@ class AgendaController extends Controller
 
         $documentos = Documento::where('id_agenda', $id)->where('nombre', 'like', '%.pdf')->get();
 
-        $concejo = Persona::where('enviar_agenda', 'S')->with('puesto')->orderBy('id', 'asc')->get();
+        $concejo = Concejo::where('enviar_agenda', 'S')->with('puesto')->orderBy('id', 'asc')->get();
 
         foreach ($concejo as &$item) {
             $item->enviar = true;
@@ -703,6 +696,10 @@ class AgendaController extends Controller
 
         $data["documentos"] = $documentos;
 
+        $agenda = Agenda::find($id);
+
+        $data["agenda"] = $agenda;
+
         return response()->json($data);
 
     }
@@ -715,7 +712,7 @@ class AgendaController extends Controller
         $documentos = $request->documentos;
 
         // Construcción del archivo a enviar
-        $puntos = Agenda::find($id_agenda)->puntos_agenda;
+        $puntos = Agenda::find($id_agenda)->puntos_agenda()->where('eliminado', null)->get();
         $agenda = Agenda::find($id_agenda);
 
         // Fecha de la agenda
@@ -771,20 +768,27 @@ class AgendaController extends Controller
 
         $pdfMerger->save(storage_path('app/agendas/'.$unique_id_file), "file");
 
-        $correo_agenda = new \stdClass();
-        $correo_agenda->nombre_archivo =  $unique_id_file;
-        $correo_agenda->etiqueta_archivo = $file_name;
-
         $correos = [];
+
+        $agenda->tipo_agenda;
 
         foreach ($personas as $persona) {
             
             $correos [] = $persona["email"];
 
+            $persona_obj = (object) $persona;
+
+            $correo_agenda = new \stdClass();
+            $correo_agenda->nombre_archivo =  $unique_id_file;
+            $correo_agenda->etiqueta_archivo = "Agenda " . $agenda->fecha . '.pdf';
+            $correo_agenda->persona = $persona_obj;
+            $correo_agenda->agenda = $agenda;
+
+            Mail::to($persona["email"])->send(new AgendaConcejo($correo_agenda));
+
         }
 
-        Mail::to($correos)->send(new AgendaConcejo($correo_agenda));
-
+       
         // Cambiar el estado de la agenda a enviado
         $bitacora_agenda = new Bitacora_Agenda();
         $bitacora_agenda->id_agenda = $id_agenda;
@@ -800,7 +804,7 @@ class AgendaController extends Controller
             $bitacora_correo = new Bitacora_Correo();
 
             $bitacora_correo->id_bitacora = $bitacora_agenda->id;
-            $bitacora_correo->id_persona = $persona["id"];
+            $bitacora_correo->id_concejo = $persona["id"];
             $bitacora_correo->archivo = $unique_id_file;
             $bitacora_correo->enviado = 'S';
             $bitacora_correo->fecha_envio = DB::raw('SYSDATE');

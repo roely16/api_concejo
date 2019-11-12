@@ -32,7 +32,7 @@ class Test extends Mailable
     {
         $location = storage_path("app/agendas/" . $this->data->nombre_archivo);
 
-        return $this->from('example@example.com')->view('mails.mail')->attach($location, [
+        return $this->from('example@example.com')->subject('Aprobación de Agenda '. $this->data->agenda->fecha)->view('mails.mail')->attach($location, [
             'as' => $this->data->etiqueta_archivo,
             'mime' => 'application/pdf',
         ]);
