@@ -16,4 +16,10 @@ class Bitacora_Correo extends Model
         return $this->belongsTo('App\Concejo', 'id_concejo');
 
     }
+
+    public function persona_s(){
+
+        return $this->belongsTo('App\Persona', 'id_persona');
+
+    }
 }

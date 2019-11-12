@@ -18,6 +18,7 @@ use App\Bitacora_Correo;
 use App\Punto_Agenda_Sesion;
 
 use App\Mail\ActaRevision;
+use App\Mail\AprobacionActa;
 
 use DB;
 use PDF;
@@ -566,7 +567,7 @@ class actaController extends Controller
 
         foreach ($puntos_agenda as &$punto_agenda) {
 
-            $punto_agenda->punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->first();
+            $punto_agenda->punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->where('eliminado', null)->first();
 
             $cantidad_digitos = strlen((string)$punto_agenda->orden);
 
@@ -627,11 +628,12 @@ class actaController extends Controller
         $content = $pdf->download()->getOriginalContent();
         $unique_id_file = time();
         Storage::put('actas/'.$unique_id_file, $content);
-        $file_name = "Acta.pdf";
+        $file_name = "Acta " . $acta->no_acta . " - " . $acta->year .  ".pdf";
 
         $data_file = new \stdClass();
         $data_file->unique_id_file = $unique_id_file;
         $data_file->file_name = $file_name;
+        $data_file->acta = $acta;
 
         return $data_file;
 
@@ -655,7 +657,7 @@ class actaController extends Controller
 
                 foreach ($historial as &$registro) {
                     
-                    $registro->persona->rol;
+                    $registro->persona_s->rol;
 
                 }
             }
@@ -817,6 +819,21 @@ class actaController extends Controller
     }
 
     public function aprobarActa(Request $request){
+
+        $acta = Acta::find($request->id_acta);
+
+        // Buscar en la bitacora quien envio el acta para analisis por ultima vez para que ha esta persona se le envie el correo
+        $bitacora_acta = Bitacora_Acta::where('id_acta', $request->id_acta)->where('id_estado', 2)->orderBy('id', 'desc')->first();
+
+        // Responsable de la aprobacion
+        $persona = Persona::find($request->id_usuario);
+
+        $data = new \stdClass();
+        $data->acta = $acta;
+        $data->responsable_aprobacion = $persona;
+
+        // Enviar el correo de aprobación del acta
+        Mail::to('gerson.roely@gmail.com')->send(new AprobacionActa($data));
 
         $this->registrarBitacoraActa($request->id_acta, 3, $request->id_usuario);
 

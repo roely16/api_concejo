@@ -7,7 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class ActaRevision extends Mailable
+class AprobacionActa extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -29,13 +29,7 @@ class ActaRevision extends Mailable
      * @return $this
      */
     public function build()
-    {   
-
-        $location = storage_path("app/actas/" . $this->data->unique_id_file);
-
-        return $this->view('mails.acta_revision')->subject('Revisión de Acta '. $this->data->acta->no_acta . ' - ' . $this->data->acta->year)->attach($location, [
-            'as' => $this->data->file_name,
-            'mime' => 'application/pdf',
-        ]);
+    {
+        return $this->view('mails.aprobacion_acta')->subject('Acta 1 - 2019 Aprobada');
     }
 }

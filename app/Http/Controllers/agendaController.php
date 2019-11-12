@@ -628,7 +628,6 @@ class AgendaController extends Controller
         // Responsable de la aprobacion
         $persona = Persona::find($request->id_persona);
 
-
         $data = new \stdClass();
         $data->fecha = $agenda->fecha;
         $data->responsable_aprobacion = $persona->nombre . ' ' . $persona->apellido;

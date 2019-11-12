@@ -84,7 +84,7 @@ class puntoAgendaSesionController extends Controller
 
     public function copiarPuntos(Request $request){
 
-        $puntos_agenda = Punto_Agenda::where('id_acta', $request->id_agenda)->where('eliminado', null)->orderBy('orden', 'asc')->get();
+        $puntos_agenda = Punto_Agenda::where('id_agenda', $request->id_agenda)->where('eliminado', null)->orderBy('orden', 'asc')->get();
 
         // Copiar cada punto en la tabla de puntos de sesión
         foreach ($puntos_agenda as $punto_agenda) {
@@ -92,7 +92,7 @@ class puntoAgendaSesionController extends Controller
             $punto_agenda_s = new Punto_Agenda_Sesion();
             $punto_agenda_s->descripcion = $punto_agenda->descripcion;
             $punto_agenda_s->orden = $punto_agenda->orden;
-            $punto_agenda_s->id_agenda = $punto_agenda->id_acta;
+            $punto_agenda_s->id_agenda = $punto_agenda->id_agenda;
             $punto_agenda_s->id_punto_agenda = $punto_agenda->id;
             $punto_agenda_s->save();
 

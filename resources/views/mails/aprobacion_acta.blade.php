@@ -9,8 +9,8 @@
 <body>
     
     <h1>Sistema de Control de Actas</h1>
-    
-    <h3>Se le ha asignado el acta {{ $data->acta->no_acta }} - {{ $data->acta->year }} para su revisión y aprobación.</h3>
+    <h3>El Acta número {{ $data->acta->no_acta }} - {{ $data->acta->year }} ha sido aprobada por {{ $data->responsable_aprobacion->nombre }} {{ $data->responsable_aprobacion->apellido }}.</h3>
+
     <h3>Para acceder al acta siga los siguientes pasos: </h3>
 
     <ul>
@@ -18,7 +18,6 @@
         <li>Ingrese su usuario y contraseña.</li>
         <li>Dar clic en el botón Actas.</li>
         <li>Ubicar el acta número {{ $data->acta->no_acta }} - {{ $data->acta->year }} y dar clic en Detalles.</li>
-        <li>Dar clic en el botón Puntos.</li>
     </ul>
 
     <br>

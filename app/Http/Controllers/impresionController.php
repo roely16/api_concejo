@@ -119,7 +119,7 @@ class impresionController extends Controller
 
         foreach ($puntos_agenda as &$punto_agenda) {
 
-            $punto_agenda->punto_acta = Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->first();
+            $punto_agenda->punto_acta =  Punto_Acta::where('id_punto_agenda', $punto_agenda->id)->where('eliminado', null)->first();
 
             $cantidad_digitos = strlen((string)$punto_agenda->orden);
 
